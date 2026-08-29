@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const config = require('./config');
+const autoSeed = require('../utils/autoSeed');
 
 let isConnecting = false;
 
@@ -9,6 +10,7 @@ const connectDB = async () => {
   try {
     await mongoose.connect(config.MONGODB_URI);
     console.log('MongoDB connection successful');
+    await autoSeed();
   } catch (err) {
     console.error('MongoDB connection error:', err.message);
     setTimeout(() => {
