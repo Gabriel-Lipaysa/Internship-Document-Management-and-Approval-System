@@ -2,102 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { StudentProfile, User, Announcement, Comment } = require('../models');
 const auth = require('../middleware/auth');
-const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-
-const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        try {
-            const dir = path.join(__dirname, '..', 'uploads', 'documents');
-            fs.mkdirSync(dir, { recursive: true });
-            cb(null, dir);
-        } catch (err) {
-            cb(err);
-        }
-    },
-    filename: function(req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        cb(null, file.fieldname + '-' + uniqueSuffix + ext);
-    }
-});
-
-const upload = multer({
-    storage: storage,
-    fileFilter: function(req, file, cb) {
-        const allowedTypes = [
-            'application/pdf',
-            'image/jpeg',
-            'image/png',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        ];
-        
-        if (allowedTypes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(null, false);
-        }
-    },
-    limits: {
-        fileSize: 5 * 1024 * 1024
-    }
-});
-
-const profileStorage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        try {
-            const dir = path.join(__dirname, '..', 'uploads', 'profile-pictures');
-            fs.mkdirSync(dir, { recursive: true });
-            cb(null, dir);
-        } catch (err) {
-            cb(err);
-        }
-    },
-    filename: function(req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        cb(null, 'profile-' + uniqueSuffix + ext);
-    }
-});
-
-const profileUpload = multer({
-    storage: profileStorage,
-    fileFilter: function(req, file, cb) {
-        const allowedTypes = ['image/jpeg', 'image/png'];
-        if (allowedTypes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only JPEG and PNG files are allowed'), false);
-        }
-    },
-    limits: {
-        fileSize: 10 * 1024 * 1024
-    }
-}).single('profilePicture');
-
-const docUpload = multer({
-    storage: storage,
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = [
-            'application/pdf',
-            'image/jpeg',
-            'image/png',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        ];
-        
-        if (allowedTypes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Invalid file type. Only PDF, JPEG, PNG, and Word documents are allowed.'));
-        }
-    },
-    limits: {
-        fileSize: 5 * 1024 * 1024
-    }
-}).single('file');
+const { profileUpload, docUpload, getUploadedFileUrl } = require('../utils/storage');
 
 router.post('/upload', auth('student'), (req, res) => {
     docUpload(req, res, async (err) => {
@@ -127,11 +34,11 @@ router.post('/upload', auth('student'), (req, res) => {
             }
 
             const existingDocIndex = profile.documents.findIndex(d => d.docType === req.body.docType);
-            
+
             const documentData = {
                 docType: req.body.docType,
                 fileName: req.file.originalname,
-                fileUrl: `/uploads/documents/${req.file.filename}`,
+                fileUrl: getUploadedFileUrl(req.file, 'document'),
                 status: 'Submitted',
                 uploadDate: new Date()
             };
@@ -154,8 +61,8 @@ router.post('/upload', auth('student'), (req, res) => {
 });
 
 router.get('/me', auth('student'), async (req, res) => {
-  const user = await User.findById(req.user.userId).populate('studentProfile');
-  res.json(user.studentProfile);
+    const user = await User.findById(req.user.userId).populate('studentProfile');
+    res.json(user.studentProfile);
 });
 
 router.put('/personal-data', auth('student'), async (req, res) => {
@@ -179,7 +86,7 @@ router.get('/edit-profile', auth('student'), async (req, res) => {
         if (!profile) {
             return res.redirect('/student/dashboard?error=Profile not found');
         }
-        res.render('student/edit-profile', { 
+        res.render('student/edit-profile', {
             profile,
             error: req.query.error,
             message: req.query.message
@@ -207,17 +114,17 @@ router.post('/edit-profile', auth('student'), async (req, res) => {
             }
 
             if (req.file) {
-                if (profile.personalData.profilePicture) {
+                if (profile.personalData.profilePicture && !profile.personalData.profilePicture.startsWith('http')) {
                     try {
                         const oldPath = path.join(__dirname, '..', profile.personalData.profilePicture);
                         if (fs.existsSync(oldPath)) {
                             fs.unlinkSync(oldPath);
-                        } 
+                        }
                     } catch (error) {
                         console.error('Error deleting old profile picture:', error);
                     }
                 }
-                profile.personalData.profilePicture = `/uploads/profile-pictures/${req.file.filename}`;
+                profile.personalData.profilePicture = getUploadedFileUrl(req.file, 'profile');
             }
 
             const updatedData = {
@@ -228,7 +135,7 @@ router.post('/edit-profile', auth('student'), async (req, res) => {
                 updatedData.profilePicture = profile.personalData.profilePicture;
             }
             profile.personalData = updatedData;
-         await profile.save();
+            await profile.save();
             res.redirect('/student/dashboard');
         } catch (err) {
             console.error('Profile update error:', err);
@@ -237,11 +144,11 @@ router.post('/edit-profile', auth('student'), async (req, res) => {
     });
 });
 
-router.delete('/document/:docId', auth('student'), async (req, res) => { 
-  const profile = await StudentProfile.findOne({ user: req.user.userId });
-  profile.documents = profile.documents.filter(doc => doc._id.toString() !== req.params.docId);
-  await profile.save();
-  res.json({ message: 'Document deleted' });
+router.delete('/document/:docId', auth('student'), async (req, res) => {
+    const profile = await StudentProfile.findOne({ user: req.user.userId });
+    profile.documents = profile.documents.filter(doc => doc._id.toString() !== req.params.docId);
+    await profile.save();
+    res.json({ message: 'Document deleted' });
 });
 
 router.get('/dashboard', auth('student'), async (req, res) => {
@@ -408,7 +315,7 @@ router.get('/document-comments/:docId', auth('student'), async (req, res) => {
 router.post('/chatbot', auth('student'), async (req, res) => {
     try {
         const { message } = req.body;
-        
+
         if (!message || !message.trim()) {
             return res.status(400).json({ error: 'Message cannot be empty' });
         }
@@ -540,7 +447,7 @@ Be concise, friendly, and helpful. When asked about the "Process for New Company
                 },
                 contents: [{
                     parts: [{
-                        text: message  
+                        text: message
                     }]
                 }],
                 generationConfig: {
@@ -558,7 +465,7 @@ Be concise, friendly, and helpful. When asked about the "Process for New Company
 
         const data = await response.json();
         const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        
+
         if (!aiResponse) {
             console.error('Invalid response structure:', data);
             return res.status(500).json({ error: 'Invalid response from AI service' });
