@@ -7,12 +7,15 @@ const config = require('../config/config');
 const seedCoordinator = async () => {
   try {
     await mongoose.connect(config.MONGODB_URI);
-    
+
     const coordinatorData = {
       email: 'coordinator@example.com',
       password: 'coordinator123',
+      name: 'OJT Coordinator',
       role: 'coordinator',
-      status: 'active'
+      campus: 'Main Campus',
+      status: 'active',
+      profilePicture: '/images/profile-placeholder.png'
     };
 
     const exists = await User.findOne({ email: coordinatorData.email });
@@ -30,7 +33,7 @@ const seedCoordinator = async () => {
     console.log('Coordinator account created successfully:');
     console.log('Email:', coordinatorData.email);
     console.log('Password:', coordinatorData.password);
-    
+
     process.exit(0);
   } catch (error) {
     console.error('Error seeding coordinator:', error);

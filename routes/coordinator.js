@@ -4,174 +4,118 @@ const { User, StudentProfile, Announcement, Comment } = require('../models');
 const bcrypt = require('bcryptjs');
 const auth = require('../middleware/auth');
 const path = require('path');
-const multer = require('multer');
 const fs = require('fs');
-
-const profileStorage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        try {
-            const dir = path.join(__dirname, '..', 'uploads', 'profile-pictures');
-            fs.mkdirSync(dir, { recursive: true });
-            cb(null, dir);
-        } catch (err) {
-            cb(err);
-        }
-    },
-    filename: function(req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        cb(null, 'profile-' + uniqueSuffix + ext);
-    }
-});
-
-const profileUpload = multer({
-    storage: profileStorage,
-    fileFilter: function(req, file, cb) {
-        const allowedTypes = ['image/jpeg', 'image/png'];
-        if (allowedTypes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only JPEG and PNG files are allowed'), false);
-        }
-    },
-    limits: {
-        fileSize: 10 * 1024 * 1024 
-    }
-}).single('profilePicture');
-
-const announcementStorage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        const dir = path.join(__dirname, '..', 'uploads', 'announcements');
-        fs.mkdirSync(dir, { recursive: true });
-        cb(null, dir);
-    },
-    filename: function(req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'announcement-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
-const announcementUpload = multer({
-    storage: announcementStorage,
-    limits: { fileSize: 5 * 1024 * 1024 }, 
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only images are allowed'));
-        }
-    }
-}).single('image');
+const { profileUpload, announcementUpload, getUploadedFileUrl } = require('../utils/storage');
 
 router.post('/create-coordinator', auth('coordinator'), async (req, res) => {
-  const { email, password, name, campus } = req.body;
-  if (!email || !password || !name || !campus) return res.status(400).json({ error: 'Missing required fields (email, password, name, campus)' });
-  
-  try {
-    const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({
-      email,
-      password: hash,
-      name,
-      campus,
-      role: 'coordinator',
-      status: 'active'
-    });
-    res.json({ message: 'Coordinator created', userId: user._id });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    const { email, password, name, campus } = req.body;
+    if (!email || !password || !name || !campus) return res.status(400).json({ error: 'Missing required fields (email, password, name, campus)' });
+
+    try {
+        const hash = await bcrypt.hash(password, 10);
+        const user = await User.create({
+            email,
+            password: hash,
+            name,
+            campus,
+            role: 'coordinator',
+            status: 'active'
+        });
+        res.json({ message: 'Coordinator created', userId: user._id });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 router.get('/pending-students', auth('coordinator'), async (req, res) => {
-  const students = await User.find({ role: 'student', status: 'pending' });
-  res.json(students);
+    const students = await User.find({ role: 'student', status: 'pending' });
+    res.json(students);
 });
 
 router.put('/approve-student/:userId', auth('coordinator'), async (req, res) => {
-  const user = await User.findById(req.params.userId);
-  if (!user || user.role !== 'student') return res.status(404).json({ error: 'Student not found' });
-  user.status = 'active';
-  await user.save();
-  res.json({ message: 'Student approved' });
+    const user = await User.findById(req.params.userId);
+    if (!user || user.role !== 'student') return res.status(404).json({ error: 'Student not found' });
+    user.status = 'active';
+    await user.save();
+    res.json({ message: 'Student approved' });
 });
 
 router.get('/students', auth('coordinator'), async (req, res) => {
-  const { status } = req.query;
-  const filter = { role: 'student', status: 'active' };
-  const users = await User.find(filter).populate('studentProfile');
-  let profiles = users.map(u => u.studentProfile).filter(Boolean);
-  if (status) profiles = profiles.filter(p => p.overallStatus === status);
-  res.json(profiles);
+    const { status } = req.query;
+    const filter = { role: 'student', status: 'active' };
+    const users = await User.find(filter).populate('studentProfile');
+    let profiles = users.map(u => u.studentProfile).filter(Boolean);
+    if (status) profiles = profiles.filter(p => p.overallStatus === status);
+    res.json(profiles);
 });
 
 router.get('/student/:studentId', auth('coordinator'), async (req, res) => {
-  const profile = await StudentProfile.findById(req.params.studentId).populate('user');
-  if (!profile) return res.status(404).json({ error: 'Profile not found' });
-  res.json(profile);
+    const profile = await StudentProfile.findById(req.params.studentId).populate('user');
+    if (!profile) return res.status(404).json({ error: 'Profile not found' });
+    res.json(profile);
 });
 
 router.put('/checklist/:profileId', auth('coordinator'), async (req, res) => {
-  const profile = await StudentProfile.findById(req.params.profileId);
-  profile.coordinatorChecklist = { ...profile.coordinatorChecklist, ...req.body };
-  await profile.save();
-  res.json(profile.coordinatorChecklist);
+    const profile = await StudentProfile.findById(req.params.profileId);
+    profile.coordinatorChecklist = { ...profile.coordinatorChecklist, ...req.body };
+    await profile.save();
+    res.json(profile.coordinatorChecklist);
 });
 
 router.put('/mark-done/:profileId', auth('coordinator'), async (req, res) => {
-  const profile = await StudentProfile.findById(req.params.profileId);
-  profile.overallStatus = 'Pending Director Review';
-  await profile.save();
-  res.json({ message: 'Marked as done, sent to director.' });
+    const profile = await StudentProfile.findById(req.params.profileId);
+    profile.overallStatus = 'Pending Director Review';
+    await profile.save();
+    res.json({ message: 'Marked as done, sent to director.' });
 });
 
 router.get('/student-details/:studentId', auth('coordinator'), async (req, res) => {
-  try {
-    const student = await User.findById(req.params.studentId)
-      .populate({
-        path: 'studentProfile',
-        populate: {
-          path: 'documents'
+    try {
+        const student = await User.findById(req.params.studentId)
+            .populate({
+                path: 'studentProfile',
+                populate: {
+                    path: 'documents'
+                }
+            });
+
+        if (!student) {
+            return res.redirect('/coordinator/dashboard?error=Student not found');
         }
-      });
 
-    if (!student) {
-      return res.redirect('/coordinator/dashboard?error=Student not found');
+        res.render('coordinator/student-details', {
+            student,
+            error: req.query.error,
+            message: req.query.message
+        });
+    } catch (err) {
+        console.error('Student Details Error:', err);
+        res.redirect('/coordinator/dashboard?error=Error loading student details');
     }
-
-    res.render('coordinator/student-details', { 
-      student,
-      error: req.query.error,
-      message: req.query.message
-    });
-  } catch (err) {
-    console.error('Student Details Error:', err);
-    res.redirect('/coordinator/dashboard?error=Error loading student details');
-  }
 });
 
 router.put('/document-status/:docId', auth('coordinator'), async (req, res) => {
-  try {
-    const profile = await StudentProfile.findOne({ 'documents._id': req.params.docId });
-    if (!profile) {
-      return res.status(404).json({ error: 'Document not found' });
+    try {
+        const profile = await StudentProfile.findOne({ 'documents._id': req.params.docId });
+        if (!profile) {
+            return res.status(404).json({ error: 'Document not found' });
+        }
+
+        const doc = profile.documents.id(req.params.docId);
+        const prevStatus = doc.status;
+        doc.status = req.body.status;
+        await profile.save();
+
+        if (doc.docType === 'moa' && req.body.status === 'Checked') {
+            profile.overallStatus = 'Pending Director Review';
+            await profile.save();
+        }
+
+        res.json({ message: 'Status updated successfully' });
+    } catch (err) {
+        console.error('Update Status Error:', err);
+        res.status(500).json({ error: 'Error updating status' });
     }
-
-    const doc = profile.documents.id(req.params.docId);
-    const prevStatus = doc.status;
-    doc.status = req.body.status;
-    await profile.save();
-
-    if (doc.docType === 'moa' && req.body.status === 'Checked') {
-      profile.overallStatus = 'Pending Director Review';
-      await profile.save();
-    }
-
-    res.json({ message: 'Status updated successfully' });
-  } catch (err) {
-    console.error('Update Status Error:', err);
-    res.status(500).json({ error: 'Error updating status' });
-  }
 });
 
 router.get('/edit-profile', auth('coordinator'), async (req, res) => {
@@ -192,18 +136,18 @@ router.post('/edit-profile', auth('coordinator'), async (req, res) => {
 
             const user = await User.findById(req.user._id);
             if (req.file) {
-                if (user.profilePicture) {
+                if (user.profilePicture && !user.profilePicture.startsWith('http')) {
                     const oldPath = path.join(__dirname, '..', user.profilePicture);
                     if (fs.existsSync(oldPath)) {
                         fs.unlinkSync(oldPath);
                     }
                 }
-                user.profilePicture = `/uploads/profile-pictures/${req.file.filename}`;
+                user.profilePicture = getUploadedFileUrl(req.file, 'profile');
             }
-            
+
             user.name = req.body.name || user.name;
             user.campus = req.body.campus || user.campus;
-            
+
             await user.save();
             res.redirect('/coordinator/dashboard');
         } catch (err) {
@@ -216,16 +160,16 @@ router.post('/edit-profile', auth('coordinator'), async (req, res) => {
 router.get('/dashboard', auth('coordinator'), async (req, res) => {
     try {
         const pendingStudents = await User.find({ role: 'student', status: 'pending' })
-          .populate({
-            path: 'studentProfile',
-            select: 'personalData'
-          });
+            .populate({
+                path: 'studentProfile',
+                select: 'personalData'
+            });
 
         const activeStudents = await User.find({ role: 'student', status: 'active' })
-          .populate({
-            path: 'studentProfile',
-            select: 'personalData documents overallStatus partnership'
-          });
+            .populate({
+                path: 'studentProfile',
+                select: 'personalData documents overallStatus partnership'
+            });
 
         let announcements = await Announcement.find()
             .populate({
@@ -288,15 +232,15 @@ router.get('/dashboard', auth('coordinator'), async (req, res) => {
         // Generate reports data
         const reportsData = await generateReportsData(activeStudents);
 
-        res.render('coordinator/dashboard', { 
-          pendingStudents,
-          activeStudents,
-          coordinators,
-          announcements,
-          reportsData,
-          error: req.query.error,
-          message: req.query.message,
-          user: req.user
+        res.render('coordinator/dashboard', {
+            pendingStudents,
+            activeStudents,
+            coordinators,
+            announcements,
+            reportsData,
+            error: req.query.error,
+            message: req.query.message,
+            user: req.user
         });
     } catch (err) {
         console.error('Dashboard Error:', err);
@@ -310,7 +254,7 @@ async function generateReportsData(activeStudents) {
 
     activeStudents.forEach(student => {
         const profile = student.studentProfile;
-        
+
         // Build companies statistics
         if (profile.partnership && profile.partnership.agency) {
             const company = profile.partnership.agency;
@@ -370,7 +314,7 @@ router.post('/announcement', auth('coordinator'), (req, res) => {
                 title: req.body.title,
                 content: req.body.content,
                 author: req.user._id,
-                imageUrl: req.file ? `/uploads/announcements/${req.file.filename}` : undefined
+                imageUrl: req.file ? getUploadedFileUrl(req.file, 'announcement') : undefined
             });
 
             await announcement.save();
@@ -448,30 +392,29 @@ router.post('/document-comment/:docId', auth('coordinator'), async (req, res) =>
         if (!profile) {
             return res.status(404).json({ error: 'Document not found' });
         }
-        
+
         const docIndex = profile.documents.findIndex(d => d._id.toString() === req.params.docId);
         if (docIndex === -1) {
             return res.status(404).json({ error: 'Document not found in profile' });
         }
-        
+
         const doc = profile.documents[docIndex];
-        
+
         if (!Array.isArray(doc.comments)) {
             doc.comments = [];
         }
-        
+
         const newComment = {
             author: req.user.name || req.user.email,
             content: req.body.comment,
             createdAt: new Date()
         };
-        
-        doc.comments.push(newComment);
-        profile.markModified('documents'); 
 
+        doc.comments.push(newComment);
+        profile.markModified('documents');
         await profile.save();
-        
-        res.json({ 
+
+        res.json({
             message: 'Comment added successfully',
             comment: newComment
         });
@@ -490,10 +433,14 @@ router.delete('/announcement/:id', auth('coordinator'), async (req, res) => {
 
         await Comment.deleteMany({ announcement: announcement._id });
 
-        if (announcement.imageUrl) {
-            const imagePath = path.join(__dirname, '..', 'public', announcement.imageUrl);
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
+        if (announcement.imageUrl && !announcement.imageUrl.startsWith('http')) {
+            try {
+                const imagePath = path.join(__dirname, '..', announcement.imageUrl.startsWith('/') ? announcement.imageUrl.slice(1) : announcement.imageUrl);
+                if (fs.existsSync(imagePath)) {
+                    fs.unlinkSync(imagePath);
+                }
+            } catch (err) {
+                console.warn('Could not remove local image file:', err.message);
             }
         }
 
@@ -506,24 +453,24 @@ router.delete('/announcement/:id', auth('coordinator'), async (req, res) => {
 });
 
 router.delete('/:id', auth('coordinator'), async (req, res) => {
-  try {
-    const targetId = req.params.id;
+    try {
+        const targetId = req.params.id;
 
-    if (req.user._id.toString() === targetId) {
-      return res.status(400).json({ error: 'Cannot delete your own account' });
+        if (req.user._id.toString() === targetId) {
+            return res.status(400).json({ error: 'Cannot delete your own account' });
+        }
+
+        const user = await User.findById(targetId);
+        if (!user || user.role !== 'coordinator') {
+            return res.status(404).json({ error: 'Coordinator not found' });
+        }
+
+        await User.findByIdAndDelete(targetId);
+        res.json({ message: 'Coordinator deleted' });
+    } catch (err) {
+        console.error('Delete coordinator error:', err);
+        res.status(500).json({ error: 'Failed to delete coordinator' });
     }
-
-    const user = await User.findById(targetId);
-    if (!user || user.role !== 'coordinator') {
-      return res.status(404).json({ error: 'Coordinator not found' });
-    }
-
-    await User.findByIdAndDelete(targetId);
-    res.json({ message: 'Coordinator deleted' });
-  } catch (err) {
-    console.error('Delete coordinator error:', err);
-    res.status(500).json({ error: 'Failed to delete coordinator' });
-  }
 });
 
 router.get('/document-comments/:docId', auth('coordinator'), async (req, res) => {

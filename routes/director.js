@@ -56,31 +56,31 @@ router.post('/document-comment/:docId', auth('director'), async (req, res) => {
   try {
     const profile = await StudentProfile.findOne({ 'documents._id': req.params.docId });
     if (!profile) return res.status(404).json({ error: 'Document not found' });
-    
+
     const docIndex = profile.documents.findIndex(d => d._id.toString() === req.params.docId);
     if (docIndex === -1) {
       return res.status(404).json({ error: 'Document not found in profile' });
     }
-    
+
     const doc = profile.documents[docIndex];
-    
+
     if (!Array.isArray(doc.comments)) {
       doc.comments = [];
     }
-    
+
     const newComment = {
       author: req.user.name || req.user.email,
       content: req.body.comment,
       createdAt: new Date()
     };
-    
+
     doc.comments.push(newComment);
     profile.markModified('documents');
-    
+
     await profile.save();
-    
-    res.json({ 
-      message: 'Comment added successfully', 
+
+    res.json({
+      message: 'Comment added successfully',
       comment: newComment
     });
   } catch (err) {
@@ -97,7 +97,11 @@ router.get('/document/:docId/view', auth('director'), async (req, res) => {
     const doc = profile.documents.id(req.params.docId);
     if (!doc || !doc.fileUrl) return res.status(404).send('File not available');
 
-    const absPath = path.join(__dirname, '..', doc.fileUrl);
+    if (doc.fileUrl.startsWith('http://') || doc.fileUrl.startsWith('https://')) {
+      return res.redirect(doc.fileUrl);
+    }
+
+    const absPath = path.join(__dirname, '..', doc.fileUrl.startsWith('/') ? doc.fileUrl.slice(1) : doc.fileUrl);
     if (!fs.existsSync(absPath)) {
       return res.status(404).send('File not found on server');
     }
@@ -130,35 +134,35 @@ router.get('/document-comments/:docId', auth('director'), async (req, res) => {
 });
 
 router.delete('/document-comment/:docId/:commentIndex', auth('director'), async (req, res) => {
-    try {
-        const profile = await StudentProfile.findOne({ 'documents._id': req.params.docId });
-        if (!profile) {
-            return res.status(404).json({ error: 'Document not found' });
-        }
-
-        const doc = profile.documents.find(d => d._id.toString() === req.params.docId);
-        if (!doc) {
-            return res.status(404).json({ error: 'Document not found' });
-        }
-
-        const commentIndex = parseInt(req.params.commentIndex);
-        if (Array.isArray(doc.comments) && commentIndex >= 0 && commentIndex < doc.comments.length) {
-            const comment = doc.comments[commentIndex];
-            if (comment.author === (req.user.name || req.user.email)) {
-                doc.comments.splice(commentIndex, 1);
-                profile.markModified('documents');
-                await profile.save();
-                res.json({ message: 'Comment deleted successfully' });
-            } else {
-                return res.status(403).json({ error: 'You can only delete your own comments' });
-            }
-        } else {
-            return res.status(404).json({ error: 'Comment not found' });
-        }
-    } catch (err) {
-        console.error('Delete comment error:', err);
-        res.status(500).json({ error: 'Failed to delete comment' });
+  try {
+    const profile = await StudentProfile.findOne({ 'documents._id': req.params.docId });
+    if (!profile) {
+      return res.status(404).json({ error: 'Document not found' });
     }
+
+    const doc = profile.documents.find(d => d._id.toString() === req.params.docId);
+    if (!doc) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    const commentIndex = parseInt(req.params.commentIndex);
+    if (Array.isArray(doc.comments) && commentIndex >= 0 && commentIndex < doc.comments.length) {
+      const comment = doc.comments[commentIndex];
+      if (comment.author === (req.user.name || req.user.email)) {
+        doc.comments.splice(commentIndex, 1);
+        profile.markModified('documents');
+        await profile.save();
+        res.json({ message: 'Comment deleted successfully' });
+      } else {
+        return res.status(403).json({ error: 'You can only delete your own comments' });
+      }
+    } else {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+  } catch (err) {
+    console.error('Delete comment error:', err);
+    res.status(500).json({ error: 'Failed to delete comment' });
+  }
 });
 
 module.exports = router;

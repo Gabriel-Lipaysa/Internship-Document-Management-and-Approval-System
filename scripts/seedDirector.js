@@ -11,8 +11,10 @@ async function seedDirector() {
     const directorData = {
       email: 'director@example.com',
       password: 'director123',
+      name: 'Director Admin',
       role: 'director',
-      status: 'active'
+      status: 'active',
+      profilePicture: '/images/profile-placeholder.png'
     };
 
     const exists = await User.findOne({ email: directorData.email });
