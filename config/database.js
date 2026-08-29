@@ -8,11 +8,8 @@ const connectDB = async () => {
   isConnecting = true;
   try {
     await mongoose.connect(config.MONGODB_URI);
-    console.log('\nDatabase connection successful');
     console.log('MongoDB connection successful');
   } catch (err) {
-    console.error('\nDatabase connection error:', err.message);
-    setTimeout(connectDB, 5000);
     console.error('MongoDB connection error:', err.message);
     setTimeout(() => {
       isConnecting = false;
@@ -24,13 +21,10 @@ const connectDB = async () => {
 };
 
 mongoose.connection.on('error', err => {
-  console.error('\nMongoDB error:', err);
   console.error('MongoDB error:', err.message);
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.log('\nMongoDB disconnected - reconnecting...');
-  connectDB();
   console.log('MongoDB disconnected');
 });
 
