@@ -134,18 +134,23 @@ npm install
 ```
 
 3. **Set up environment variables**
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory (refer to `.env.example`):
 ```env
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database
 JWT_SECRET=your_secret_key_here
 GEMINI_API_KEY=your_gemini_api_key
 NODE_ENV=development
 PORT=3000
+
+# Optional Cloudinary Configuration (falls back to local /uploads if omitted):
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ```
 
-4. **Initialize the database** (seed director account)
+4. **Initialize the database** (seed Director and Coordinator accounts)
 ```bash
-npm run seed:director
+npm run seed
 ```
 
 5. **Start the server**
@@ -157,7 +162,8 @@ The application will be available at `http://localhost:3000`
 
 ### Default Credentials (for testing)
 - **Director:** `director@example.com` / `director123`
-- **Student & Coordinator:** Create via registration page
+- **Coordinator:** `coordinator@example.com` / `coordinator123`
+- **Student:** Register via `/register` or create via coordinator dashboard
 
 ## 📋 Usage
 
