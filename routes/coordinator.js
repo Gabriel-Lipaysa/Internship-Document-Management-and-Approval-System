@@ -308,14 +308,15 @@ router.post('/announcement', auth('coordinator'), (req, res) => {
     announcementUpload(req, res, async (err) => {
         try {
             if (err) {
-                return res.status(400).json({ error: err.message });
+                console.error('Announcement multer/upload error:', err);
+                return res.status(400).json({ error: `400 Bad Request (File Upload): ${err.message}` });
             }
 
             const title = req.body.title ? req.body.title.trim() : '';
             const content = req.body.content ? req.body.content.trim() : '';
 
             if (!title || !content) {
-                return res.status(400).json({ error: 'Please provide both title and content for the announcement.' });
+                return res.status(400).json({ error: '400 Bad Request (Validation): Announcement title and content are required.' });
             }
 
             // Duplicate request prevention: Check for duplicate announcement created within the last 5 seconds
@@ -330,18 +331,21 @@ router.post('/announcement', auth('coordinator'), (req, res) => {
                 return res.json(recentDuplicate);
             }
 
+            const imageUrl = req.file ? getUploadedFileUrl(req.file, 'announcement') : undefined;
+
             const announcement = new Announcement({
                 title,
                 content,
                 author: req.user._id,
-                imageUrl: req.file ? getUploadedFileUrl(req.file, 'announcement') : undefined
+                imageUrl
             });
 
             await announcement.save();
+            console.log('✓ Announcement created successfully:', announcement._id, 'Image:', imageUrl || 'None');
             res.json(announcement);
         } catch (err) {
-            console.error('Announcement creation error:', err);
-            res.status(500).json({ error: err.message || 'Error creating announcement' });
+            console.error('Announcement creation database/server error:', err);
+            res.status(500).json({ error: `500 Server Error: ${err.message || 'Error creating announcement'}` });
         }
     });
 });
