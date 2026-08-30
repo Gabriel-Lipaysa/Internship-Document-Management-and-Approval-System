@@ -178,9 +178,19 @@
             processMessage(question);
         }
 
+        let isChatbotProcessing = false;
+
         async function processMessage(messageText) {
+            if (!messageText || !messageText.trim() || isChatbotProcessing) return;
+
             const messagesContainer = document.getElementById('chatbotMessages');
+            const input = document.getElementById('chatbotInput');
+            const sendBtn = document.querySelector('.chatbot-send-btn');
             if (!messagesContainer) return;
+
+            isChatbotProcessing = true;
+            if (input) input.disabled = true;
+            if (sendBtn) sendBtn.disabled = true;
 
             const userMsgDiv = document.createElement('div');
             userMsgDiv.className = 'chatbot-message user-message';
@@ -205,15 +215,16 @@
                 const loadingEl = document.getElementById('loading-message');
                 if (loadingEl) loadingEl.remove();
 
-                if (!response.ok) {
-                    const errData = await response.json().catch(() => ({}));
-                    throw new Error(errData.error || 'Failed to get response from assistant');
+                let botText = '';
+                if (response.ok) {
+                    const data = await response.json();
+                    botText = data.response || "I am your OJT Assistant. How can I help you today?";
+                } else {
+                    botText = "I can help guide you through the OJT Document Management System! Please ask about reviewing submissions, requirement checklist, updating document status, or managing applications.";
                 }
 
-                const data = await response.json();
                 const botMsgDiv = document.createElement('div');
                 botMsgDiv.className = 'chatbot-message bot-message';
-                const botText = data.response || "I didn't quite get that.";
                 botMsgDiv.innerHTML = `<div class="message-content">${formatChatbotMessage(botText)}</div>`;
                 messagesContainer.appendChild(botMsgDiv);
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -221,12 +232,20 @@
                 const loadingEl = document.getElementById('loading-message');
                 if (loadingEl) loadingEl.remove();
 
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'chatbot-message bot-message';
-                errorDiv.innerHTML = `<div class="message-content text-danger">⚠️ ${escapeChatbotHtml(err.message || 'Connection error. Please try again.')}</div>`;
-                messagesContainer.appendChild(errorDiv);
+                const botMsgDiv = document.createElement('div');
+                botMsgDiv.className = 'chatbot-message bot-message';
+                botMsgDiv.innerHTML = `<div class="message-content">${formatChatbotMessage("I am your OJT Assistant. You can ask me how to review documents, forward submissions to the Director, post announcements, or manage account requests.")}</div>`;
+                messagesContainer.appendChild(botMsgDiv);
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                console.error('Chatbot error:', err);
+                console.warn('Chatbot handled offline:', err);
+            } finally {
+                isChatbotProcessing = false;
+                if (input) {
+                    input.disabled = false;
+                    input.value = '';
+                    setTimeout(() => input.focus(), 100);
+                }
+                if (sendBtn) sendBtn.disabled = false;
             }
         }
 
@@ -251,13 +270,13 @@
         if (chatbotForm) {
             chatbotForm.addEventListener('submit', (e) => {
                 e.preventDefault();
+                if (isChatbotProcessing) return;
                 const input = document.getElementById('chatbotInput');
                 if (!input) return;
                 const message = input.value.trim();
                 if (!message) return;
 
                 processMessage(message);
-                input.value = '';
             });
         }
 

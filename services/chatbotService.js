@@ -153,7 +153,7 @@ Be encouraging, concise, friendly, and helpful.`;
    */
   static async getReply(message, role = 'student') {
     if (!message || !message.trim()) {
-      throw new Error('Message cannot be empty');
+      return ChatbotService.getLocalFallbackReply('help', role);
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
@@ -162,44 +162,58 @@ Be encouraging, concise, friendly, and helpful.`;
       return ChatbotService.getLocalFallbackReply(message, role);
     }
 
-    const systemInstruction = ChatbotService.getSystemInstruction(role);
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    try {
+      const systemInstruction = ChatbotService.getSystemInstruction(role);
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        system_instruction: {
-          parts: { text: systemInstruction }
-        },
-        contents: [{
-          parts: [{
-            text: message
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 600,
+      // Attempt with standard available Gemini models
+      const models = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash'];
+      let lastError = null;
+
+      for (const model of models) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              system_instruction: {
+                parts: [{ text: systemInstruction }]
+              },
+              contents: [{
+                parts: [{
+                  text: message
+                }]
+              }],
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 600,
+              }
+            })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (aiResponse && aiResponse.trim()) {
+              return aiResponse.trim();
+            }
+          } else {
+            const errorData = await response.json().catch(() => ({}));
+            lastError = `Model ${model} returned ${response.status}: ${JSON.stringify(errorData)}`;
+          }
+        } catch (mErr) {
+          lastError = mErr.message;
         }
-      })
-    });
+      }
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('Gemini API error:', response.status, errorData);
-      throw new Error('Failed to get response from AI service');
+      console.warn('Gemini API call failed, using intelligent offline fallback. Detail:', lastError);
+      return ChatbotService.getLocalFallbackReply(message, role);
+    } catch (err) {
+      console.warn('Chatbot fallback triggered due to error:', err.message);
+      return ChatbotService.getLocalFallbackReply(message, role);
     }
-
-    const data = await response.json();
-    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!aiResponse) {
-      throw new Error('Invalid response structure from AI service');
-    }
-
-    return aiResponse;
   }
 
   /**
@@ -209,43 +223,58 @@ Be encouraging, concise, friendly, and helpful.`;
    * @returns {string}
    */
   static getLocalFallbackReply(message, role) {
-    const q = message.toLowerCase();
+    const q = (message || '').toLowerCase();
 
     if (role === 'director') {
-      if (q.includes('moa') || q.includes('approve')) {
+      if (q.includes('moa') || q.includes('approve') || q.includes('agreement')) {
         return 'To review and approve an MOA: 1) Click "View Details" on a student profile, 2) Click "View MOA" to inspect the document, 3) Select "Done" from the status dropdown to approve or "Revise" to request revisions, and 4) Click "Comments" to leave official Director feedback.';
       }
-      if (q.includes('filter') || q.includes('search')) {
+      if (q.includes('filter') || q.includes('search') || q.includes('campus') || q.includes('course')) {
         return 'You can filter student profiles by Course, Year & Section, Campus, and Partner Company using the filter dropdowns at the top of your dashboard. Click "Reset Filters" to clear.';
       }
+      if (q.includes('comment') || q.includes('feedback')) {
+        return 'To leave feedback: Click "View Details" on a student profile, click the "Comments" button next to their MOA, type your official Director remarks, and submit.';
+      }
       if (q.includes('status')) {
-        return 'MOA Status Meanings for Director: \n• "Processing" - Under active review\n• "Revise" - Corrections needed (signatures/notarization)\n• "Done" - MOA approved and finalized.';
+        return 'MOA Status Meanings for Director:\n• "Processing" - Under active review\n• "Revise" - Corrections needed (signatures/notarization)\n• "Done" - MOA approved and finalized.';
       }
       return 'Hello Director! I can help you with reviewing student profiles, evaluating Memorandum of Agreement (MOA) submissions, updating approval statuses, and navigating the executive dashboard.';
     }
 
     if (role === 'coordinator') {
-      if (q.includes('review') || q.includes('document')) {
-        return 'To review student submissions: 1) Go to the "Review submissions" tab, 2) Filter by Course/Section if needed, 3) Click "View" on a student to see their documents, 4) Update document statuses (e.g. Checked, For Revision, Done) and add feedback comments.';
+      if (q.includes('review') || q.includes('document') || q.includes('feedback') || q.includes('leave')) {
+        return 'To review student submissions and leave feedback: 1) Go to the "Review submissions" tab, 2) Filter by Course/Section if needed, 3) Click "View" on a student to see their documents, 4) Update document statuses (e.g. Checked, For Revision, Done) and click the "Comments" icon to leave document-specific feedback.';
       }
-      if (q.includes('director') || q.includes('forward')) {
-        return 'Once all pre-deployment requirements and the MOA are checked, click the "Mark as Done, sent to director" button on the student details page to forward the profile for Director review.';
+      if (q.includes('director') || q.includes('forward') || q.includes('send')) {
+        return 'To forward submissions to the Director: Once all pre-deployment requirements and the MOA are checked on the student details page, click the "Mark as Done, sent to director" button to forward the profile for Director review.';
       }
-      if (q.includes('account') || q.includes('request') || q.includes('approve')) {
-        return 'To approve students: Navigate to the "Account requests" tab. Click the green "Approve" button next to a student to activate their account or "Reject" to decline.';
+      if (q.includes('account') || q.includes('request') || q.includes('approve') || q.includes('reject')) {
+        return 'To manage student registrations: Navigate to the "Account requests" tab. Click the green "Approve" button next to a student to activate their account or "Reject" to decline the request.';
       }
-      if (q.includes('announcement') || q.includes('photo')) {
-        return 'To post an announcement: Go to the "Home" tab, fill in the title and content in the top card, click "Attach Photo" to choose an image, and click "Post".';
+      if (q.includes('announcement') || q.includes('photo') || q.includes('post')) {
+        return 'To post an announcement: Go to the "Home" tab, fill in the title and content in the top card, optionally click "Attach Photo" to choose an image (JPG/PNG), and click "Post".';
+      }
+      if (q.includes('checklist')) {
+        return 'The Coordinator Checklist contains: 1) Clearance Checked, 2) MOA Checked, and 3) Record File Checked. Ensure all three are marked before endorsing to the Director.';
+      }
+      if (q.includes('add coordinator') || q.includes('create coordinator')) {
+        return 'To register a new coordinator: Go to the "Add Coordinators" tab on your dashboard, click "+ Add Coordinator", enter their email, password, name, and campus, and submit.';
+      }
+      if (q.includes('report') || q.includes('stat')) {
+        return 'View the "Reports & Statistics" tab on your dashboard for charts summarizing total partner companies, deployed students, and campus MOA completion rates.';
       }
       return 'Hello Coordinator! I can assist you with reviewing student submissions, managing partner applications, approving account requests, posting announcements, and analyzing OJT reports.';
     }
 
     // Student fallback
-    if (q.includes('upload')) {
+    if (q.includes('upload') || q.includes('how do i upload')) {
       return 'To upload documents: Go to the "Documents" tab on your dashboard, expand the section (Pre-Deployment, Legal, or Post-OJT), choose your file (PDF, Word, or image up to 5MB), and click "Upload".';
     }
+    if (q.includes('required') || q.includes('document')) {
+      return 'Required OJT Documents:\n1) Pre-Deployment (Record File, Application, Medical Cert, Resume, Consent, Endorsement, Release Form)\n2) Legal Forms (Internship Agreement, MOA, Liability Waiver)\n3) Post-OJT (Narrative Report, DTR, Evaluation Forms, Certificate of Completion).';
+    }
     if (q.includes('status')) {
-      return 'Document Statuses:\n• Submitted: Uploaded and awaiting coordinator review\n• Checked: Reviewed by coordinator\n• Revise / For Revision: Corrections needed (check comments)\n• Done: Approved!';
+      return 'Document Statuses:\n• "Submitted": Uploaded and awaiting coordinator review\n• "Checked": Reviewed by coordinator\n• "Revise" / "For Revision": Corrections needed (check comments)\n• "Done": Approved!';
     }
     if (q.includes('company') || q.includes('partner') || q.includes('application')) {
       return 'To apply for a partnership: 1) Go to the "Application" tab, 2) Select a partner company from the list or choose "Others" for a custom agency, 3) Enter location and contact email, and 4) Submit your application.';

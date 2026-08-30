@@ -105,69 +105,72 @@
                                             <%= announcement.content %>
                                         </p>
                                         <% if (announcement.imageUrl) { %>
-                                            <div class="text-center">
-                                                <img src="<%= announcement.imageUrl %>"
-                                                    class="img-fluid rounded mb-3 clickable-image"
-                                                    style="aspect-ratio: 1 / 1; width: 100%; max-width: 400px; object-fit: cover; cursor: pointer;"
-                                                    data-bs-toggle="modal" data-bs-target="#imageModal"
-                                                    onclick="prepareModal(this.src)"
-                                                    onerror="this.parentElement.style.display='none'">
-                                            </div>
-                                            <% } %>
+                                            <% const postImg=(announcement.imageUrl.startsWith('http') ||
+                                                announcement.imageUrl.startsWith('/')) ? announcement.imageUrl
+                                                : '/uploads/announcements/' + announcement.imageUrl; %>
+                                                <div class="text-center">
+                                                    <img src="<%= postImg %>"
+                                                        class="img-fluid rounded mb-3 clickable-image"
+                                                        style="aspect-ratio: 1 / 1; width: 100%; max-width: 400px; object-fit: cover; cursor: pointer;"
+                                                        data-bs-toggle="modal" data-bs-target="#imageModal"
+                                                        onclick="prepareModal(this.src)"
+                                                        onerror="this.parentElement.style.display='none'">
+                                                </div>
+                                                <% } %>
 
-                                                <!-- Comments Section -->
-                                                <div class="border-top pt-3">
-                                                    <button class="btn btn-outline-primary btn-sm mb-3"
-                                                        onclick="toggleComments(this)">
-                                                        <i class="bi bi-chat"></i> Comments (<%=
-                                                            announcement.comments?.length || 0 %>)
-                                                    </button>
+                                                    <!-- Comments Section -->
+                                                    <div class="border-top pt-3">
+                                                        <button class="btn btn-outline-primary btn-sm mb-3"
+                                                            onclick="toggleComments(this)">
+                                                            <i class="bi bi-chat"></i> Comments (<%=
+                                                                announcement.comments?.length || 0 %>)
+                                                        </button>
 
-                                                    <div class="comments-section" style="display: none;">
-                                                        <form class="comment-form d-flex gap-2 mb-3"
-                                                            data-announcement="<%= announcement._id %>">
-                                                            <!-- use user.profilePicture OR student profile picture OR default -->
-                                                            <img src="<%= user.profilePicture || (profile?.personalData?.profilePicture) || '/images/default-avatar.png' %>"
-                                                                onerror="this.src='/images/profile-placeholder.png'"
-                                                                class="rounded-circle"
-                                                                style="width: 32px; height: 32px; object-fit: cover;">
-                                                            <div class="flex-grow-1">
-                                                                <input type="text" class="form-control rounded-pill"
-                                                                    placeholder="Write a comment...">
-                                                            </div>
-                                                            <button type="submit"
-                                                                class="btn btn-primary btn-sm px-3">Post</button>
-                                                        </form>
-
-                                                        <div class="comments-list">
-                                                            <% (announcement.comments || []).forEach(comment=> { %>
-                                                                <div class="d-flex gap-2 mb-2">
-                                                                    <img src="<%= comment.author?.profilePicture || '/images/default-avatar.png' %>"
-                                                                        onerror="this.src='/images/profile-placeholder.png'"
-                                                                        class="rounded-circle"
-                                                                        style="width: 32px; height: 32px; object-fit: cover;">
-                                                                    <div class="bg-light rounded-3 p-2 flex-grow-1">
-                                                                        <div class="fw-bold">
-                                                                            <%= comment.author?.name ||
-                                                                                comment.author?.email %>
-                                                                        </div>
-                                                                        <p class="mb-1">
-                                                                            <%= comment.content %>
-                                                                        </p>
-                                                                        <!-- server-rendered comment time -->
-                                                                        <small class="text-muted">
-                                                                            <%= new
-                                                                                Date(comment.createdAt).toLocaleString('en-US',
-                                                                                { year: 'numeric' , month: 'short' ,
-                                                                                day: 'numeric' , hour: 'numeric' ,
-                                                                                minute: '2-digit' }) %>
-                                                                        </small>
-                                                                    </div>
+                                                        <div class="comments-section" style="display: none;">
+                                                            <form class="comment-form d-flex gap-2 mb-3"
+                                                                data-announcement="<%= announcement._id %>">
+                                                                <!-- use user.profilePicture OR student profile picture OR default -->
+                                                                <img src="<%= user.profilePicture || (profile?.personalData?.profilePicture) || '/images/default-avatar.png' %>"
+                                                                    onerror="this.src='/images/profile-placeholder.png'"
+                                                                    class="rounded-circle"
+                                                                    style="width: 32px; height: 32px; object-fit: cover;">
+                                                                <div class="flex-grow-1">
+                                                                    <input type="text" class="form-control rounded-pill"
+                                                                        placeholder="Write a comment...">
                                                                 </div>
-                                                                <% }) %>
+                                                                <button type="submit"
+                                                                    class="btn btn-primary btn-sm px-3">Post</button>
+                                                            </form>
+
+                                                            <div class="comments-list">
+                                                                <% (announcement.comments || []).forEach(comment=> { %>
+                                                                    <div class="d-flex gap-2 mb-2">
+                                                                        <img src="<%= comment.author?.profilePicture || '/images/default-avatar.png' %>"
+                                                                            onerror="this.src='/images/profile-placeholder.png'"
+                                                                            class="rounded-circle"
+                                                                            style="width: 32px; height: 32px; object-fit: cover;">
+                                                                        <div class="bg-light rounded-3 p-2 flex-grow-1">
+                                                                            <div class="fw-bold">
+                                                                                <%= comment.author?.name ||
+                                                                                    comment.author?.email %>
+                                                                            </div>
+                                                                            <p class="mb-1">
+                                                                                <%= comment.content %>
+                                                                            </p>
+                                                                            <!-- server-rendered comment time -->
+                                                                            <small class="text-muted">
+                                                                                <%= new
+                                                                                    Date(comment.createdAt).toLocaleString('en-US',
+                                                                                    { year: 'numeric' , month: 'short' ,
+                                                                                    day: 'numeric' , hour: 'numeric' ,
+                                                                                    minute: '2-digit' }) %>
+                                                                            </small>
+                                                                        </div>
+                                                                    </div>
+                                                                    <% }) %>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
                                     </div>
                                 </div>
                                 <% }) %>
@@ -906,12 +909,19 @@
         <% } %>
 
             <script>
+                let isDocumentUploading = false;
                 document.querySelectorAll('.document-upload').forEach(input => {
                     input.addEventListener('change', async (e) => {
+                        if (isDocumentUploading) return;
                         const file = e.target.files[0];
                         if (!file) return;
 
+                        const parentLabel = input.closest('label') || input.parentElement;
                         try {
+                            isDocumentUploading = true;
+                            input.disabled = true;
+                            showToast('Uploading document, please wait...', 'info', 'Uploading', 2500);
+
                             const formData = new FormData();
                             formData.append('file', file);
                             formData.append('docType', e.target.dataset.docType);
@@ -927,11 +937,14 @@
                                 throw new Error(result.error || 'Upload failed');
                             }
 
-                            console.log('Upload successful:', result);
-                            window.location.reload();
+                            showToast('Document uploaded successfully!', 'success');
+                            setTimeout(() => window.location.reload(), 500);
                         } catch (err) {
                             console.error('Upload error:', err);
                             showToast(err.message || 'Upload failed. Please try again.', 'danger');
+                            isDocumentUploading = false;
+                            input.disabled = false;
+                            input.value = '';
                         }
                     });
                 });
@@ -948,14 +961,21 @@
                 }
 
                 document.querySelectorAll('.comment-form').forEach(form => {
+                    let isStudentCommentPosting = false;
                     form.addEventListener('submit', async (e) => {
                         e.preventDefault();
+                        if (isStudentCommentPosting) return;
+
                         const input = form.querySelector('input');
+                        const submitBtn = form.querySelector('button[type="submit"]');
                         const announcementId = form.dataset.announcement;
 
-                        if (!input.value.trim()) return;
+                        if (!input || !input.value.trim()) return;
 
                         try {
+                            isStudentCommentPosting = true;
+                            if (submitBtn) submitBtn.disabled = true;
+
                             const response = await fetch(`/student/announcement/${announcementId}/comment`, {
                                 method: 'POST',
                                 headers: {
@@ -985,33 +1005,42 @@
                             commentsList.insertAdjacentHTML('afterbegin', commentHtml);
 
                             const commentBtn = form.closest('.comments-section').previousElementSibling;
-                            const currentCount = parseInt(commentBtn.textContent.match(/\d+/)[0]);
-                            commentBtn.innerHTML = `<i class="bi bi-chat"></i> Comments (${currentCount + 1})`;
+                            if (commentBtn) {
+                                const countMatch = commentBtn.textContent.match(/\d+/);
+                                const currentCount = countMatch ? parseInt(countMatch[0]) : 0;
+                                commentBtn.innerHTML = `<i class="bi bi-chat"></i> Comments (${currentCount + 1})`;
+                            }
 
                             input.value = '';
                             showToast('Comment posted successfully', 'success');
                         } catch (err) {
                             showToast('Error posting comment: ' + err.message, 'danger');
+                        } finally {
+                            isStudentCommentPosting = false;
+                            if (submitBtn) submitBtn.disabled = false;
                         }
                     });
                 });
 
-                document.getElementById('agencySelect').addEventListener('change', function (e) {
+                document.getElementById('agencySelect')?.addEventListener('change', function (e) {
                     const customAgencyDiv = document.getElementById('customAgencyDiv');
+                    if (!customAgencyDiv) return;
                     if (e.target.value === 'Others') {
                         customAgencyDiv.style.display = 'block';
-                        customAgencyDiv.querySelector('input').setAttribute('required', 'required');
+                        customAgencyDiv.querySelector('input')?.setAttribute('required', 'required');
                     } else {
                         customAgencyDiv.style.display = 'none';
-                        customAgencyDiv.querySelector('input').removeAttribute('required');
+                        customAgencyDiv.querySelector('input')?.removeAttribute('required');
                     }
                 });
 
-                document.getElementById('partnershipForm').addEventListener('submit', async (e) => {
+                let isPartnershipApplying = false;
+                document.getElementById('partnershipForm')?.addEventListener('submit', async (e) => {
                     e.preventDefault();
+                    if (isPartnershipApplying) return;
 
                     const agencySelect = document.getElementById('agencySelect');
-                    if (!agencySelect.value) {
+                    if (!agencySelect || !agencySelect.value) {
                         showToast('Please select a partnership', 'warning');
                         return;
                     }
@@ -1024,7 +1053,14 @@
                         return;
                     }
 
+                    const submitBtn = e.target.querySelector('button[type="submit"]');
                     try {
+                        isPartnershipApplying = true;
+                        if (submitBtn) {
+                            submitBtn.disabled = true;
+                            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Submitting...';
+                        }
+
                         const response = await fetch('/student/apply-partnership', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -1032,7 +1068,7 @@
                         });
 
                         if (!response.ok) {
-                            const error = await response.json();
+                            const error = await response.json().catch(() => ({}));
                             throw new Error(error.error || 'Failed to submit application');
                         }
 
@@ -1040,9 +1076,14 @@
 
                         setTimeout(() => {
                             window.location.reload();
-                        }, 1000);
+                        }, 600);
                     } catch (err) {
-                        showToast('Error: ' + err.message, 'danger');
+                        showToast(err.message || 'Error submitting application', 'danger');
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'Submit Application';
+                        }
+                        isPartnershipApplying = false;
                     }
                 });
 

@@ -170,15 +170,12 @@ const ChatbotService = require('../services/chatbotService');
 router.post('/chatbot', auth('director'), async (req, res) => {
   try {
     const { message } = req.body;
-    if (!message || !message.trim()) {
-      return res.status(400).json({ error: 'Message cannot be empty' });
-    }
-
-    const reply = await ChatbotService.getReply(message, 'director');
+    const reply = await ChatbotService.getReply(message || '', 'director');
     res.json({ response: reply });
   } catch (err) {
-    console.error('Director chatbot error:', err);
-    res.status(500).json({ error: err.message || 'Chatbot service error' });
+    console.error('Director chatbot route catch:', err);
+    const fallback = ChatbotService.getLocalFallbackReply(req.body?.message || '', 'director');
+    res.json({ response: fallback });
   }
 });
 
