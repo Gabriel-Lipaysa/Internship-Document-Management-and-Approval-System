@@ -3,24 +3,34 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 const config = require('../config/config');
-const { User, StudentProfile } = require('../models');
+const { User, StudentProfile, Announcement, Comment } = require('../models');
 
 const resetDatabase = async () => {
   try {
     await mongoose.connect(config.MONGODB_URI);
     console.log('Connected to MongoDB');
 
-    await User.deleteMany({});
-    await StudentProfile.deleteMany({});
-    console.log('Deleted all documents from collections');
+    await Promise.all([
+      User.deleteMany({}),
+      StudentProfile.deleteMany({}),
+      Announcement.deleteMany({}),
+      Comment.deleteMany({})
+    ]);
+    console.log('Deleted all documents from User, StudentProfile, Announcement, and Comment collections');
 
     const uploadsDir = path.join(__dirname, '..', config.UPLOAD_DIR);
     if (fs.existsSync(uploadsDir)) {
-      fs.readdirSync(uploadsDir).forEach(file => {
-        if (file !== '.gitkeep') {
-          fs.unlinkSync(path.join(uploadsDir, file));
-        }
-      });
+      const cleanDirectory = (dir) => {
+        fs.readdirSync(dir).forEach(file => {
+          const fullPath = path.join(dir, file);
+          if (fs.statSync(fullPath).isDirectory()) {
+            cleanDirectory(fullPath);
+          } else if (file !== '.gitkeep') {
+            fs.unlinkSync(fullPath);
+          }
+        });
+      };
+      cleanDirectory(uploadsDir);
       console.log('Cleared uploads directory');
     }
 
