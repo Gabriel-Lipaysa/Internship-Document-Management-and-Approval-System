@@ -9,7 +9,13 @@ const UserSchema = new Schema({
   studentProfile: { type: Schema.Types.ObjectId, ref: 'StudentProfile' },
   name: { type: String },
   profilePicture: { type: String },
-  campus: { type: String, default: '' }
+  campus: { type: String, default: '' },
+  department: { type: String, default: '' },
+  designation: { type: String, default: '' },
+  contactNumber: { type: String, default: '' },
+  officeLocation: { type: String, default: '' },
+  officeHours: { type: String, default: '' },
+  bio: { type: String, default: '' }
 });
 
 const StudentProfileSchema = new Schema({

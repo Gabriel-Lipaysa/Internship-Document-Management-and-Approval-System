@@ -122,8 +122,18 @@ router.put('/document-status/:docId', auth('coordinator'), async (req, res) => {
 router.get('/edit-profile', auth('coordinator'), async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
-        res.render('coordinator/edit-profile', { user });
+        if (!user) {
+            return res.redirect('/coordinator/dashboard?error=User not found');
+        }
+        res.render('coordinator/edit-profile', {
+            user,
+            title: 'Edit Coordinator Profile',
+            layout: 'layouts/coordinator-main',
+            error: req.query.error,
+            message: req.query.message
+        });
     } catch (err) {
+        console.error('Edit profile get error:', err);
         res.redirect('/coordinator/dashboard?error=Error loading profile');
     }
 });
@@ -132,28 +142,52 @@ router.post('/edit-profile', auth('coordinator'), async (req, res) => {
     profileUpload(req, res, async (err) => {
         try {
             if (err) {
-                return res.redirect('/coordinator/edit-profile?error=' + err.message);
+                return res.redirect('/coordinator/edit-profile?error=' + encodeURIComponent(err.message));
             }
 
             const user = await User.findById(req.user._id);
+            if (!user) {
+                return res.redirect('/coordinator/dashboard?error=User not found');
+            }
+
             if (req.file) {
-                if (user.profilePicture && !user.profilePicture.startsWith('http')) {
-                    const oldPath = path.join(__dirname, '..', user.profilePicture);
-                    if (fs.existsSync(oldPath)) {
-                        fs.unlinkSync(oldPath);
-                    }
-                }
                 user.profilePicture = getUploadedFileUrl(req.file, 'profile');
             }
 
-            user.name = req.body.name || user.name;
-            user.campus = req.body.campus || user.campus;
+            user.name = (req.body.name || user.name || '').trim();
+            user.campus = (req.body.campus || user.campus || '').trim();
+            user.department = (req.body.department || '').trim();
+            user.designation = (req.body.designation || '').trim();
+            user.contactNumber = (req.body.contactNumber || '').trim();
+            user.officeLocation = (req.body.officeLocation || '').trim();
+            user.officeHours = (req.body.officeHours || '').trim();
+            user.bio = (req.body.bio || '').trim();
+
+            // Optional password update
+            const { currentPassword, newPassword, confirmPassword } = req.body;
+            if (newPassword && newPassword.trim()) {
+                if (!currentPassword || !currentPassword.trim()) {
+                    return res.redirect('/coordinator/edit-profile?error=Please enter your current password to set a new password');
+                }
+                const bcrypt = require('bcryptjs');
+                const isMatch = await bcrypt.compare(currentPassword, user.password);
+                if (!isMatch) {
+                    return res.redirect('/coordinator/edit-profile?error=Current password is incorrect');
+                }
+                if (newPassword.length < 6) {
+                    return res.redirect('/coordinator/edit-profile?error=New password must be at least 6 characters long');
+                }
+                if (newPassword !== confirmPassword) {
+                    return res.redirect('/coordinator/edit-profile?error=New passwords do not match');
+                }
+                user.password = await bcrypt.hash(newPassword, 10);
+            }
 
             await user.save();
-            res.redirect('/coordinator/dashboard');
+            res.redirect('/coordinator/dashboard?message=' + encodeURIComponent('Profile updated successfully!'));
         } catch (err) {
             console.error('Profile update error:', err);
-            res.redirect('/coordinator/edit-profile?error=' + err.message);
+            res.redirect('/coordinator/edit-profile?error=' + encodeURIComponent(err.message || 'Failed to update profile'));
         }
     });
 });

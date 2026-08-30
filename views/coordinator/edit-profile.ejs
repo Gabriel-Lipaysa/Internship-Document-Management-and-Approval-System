@@ -1,44 +1,257 @@
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h3 class="card-title mb-4">Edit Coordinator Profile</h3>
+<link href="/css/style-nav.css" rel="stylesheet">
+<link href="/css/style-edit-profile.css" rel="stylesheet">
 
-                    <form action="/coordinator/edit-profile" method="POST" enctype="multipart/form-data">
-                        <div class="text-center mb-4">
-                            <img src="<%= user.profilePicture || '/images/default-avatar.png' %>"
-                                onerror="this.src='/images/profile-placeholder.png'"
-                                class="rounded-circle profile-picture mb-3"
-                                style="width: 150px; height: 150px; object-fit: cover;" id="profilePreview">
-                            <div>
-                                <label class="btn btn-outline-primary">
-                                    Change Photo
-                                    <input type="file" name="profilePicture" accept="image/jpeg,image/png"
-                                        style="display: none;" onchange="previewImage(this)">
+<div class="container py-4 py-md-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+
+            <!-- Breadcrumb Navigation -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb bg-transparent p-0 mb-1">
+                    <li class="breadcrumb-item"><a href="/coordinator/dashboard"
+                            class="text-decoration-none text-primary"><i class="bi bi-arrow-left me-1"></i>
+                            Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit Profile</li>
+                </ol>
+            </nav>
+
+            <div class="custom-rounded-card shadow-sm border-0 mb-5 bg-white"
+                style="border-radius: 20px; overflow: hidden;">
+
+                <!-- Card Header Banner -->
+                <div class="bg-primary text-white p-4 p-md-5 text-center position-relative"
+                    style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+                    <h3 class="fw-bold mb-1">Coordinator Profile</h3>
+                    <p class="text-white-50 mb-0 small">Update your official contact details, campus assignment, and
+                        office hours</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5 pt-0">
+                    <form action="/coordinator/edit-profile" method="POST" enctype="multipart/form-data"
+                        id="coordinatorProfileForm">
+
+                        <!-- Profile Photo Section -->
+                        <div class="text-center mb-5" style="margin-top: -50px;">
+                            <div class="position-relative d-inline-block">
+                                <img src="<%= user.profilePicture || '/images/default-avatar.png' %>"
+                                    onerror="this.src='/images/profile-placeholder.png'"
+                                    class="rounded-circle border border-4 border-white shadow-lg profile-picture"
+                                    style="width: 130px; height: 130px; object-fit: cover; background: #fff;"
+                                    id="profilePreview">
+
+                                <label for="profilePictureInput"
+                                    class="btn btn-primary rounded-circle position-absolute bottom-0 end-0 p-0 d-flex align-items-center justify-content-center shadow"
+                                    style="width: 38px; height: 38px; border: 3px solid #fff; cursor: pointer;"
+                                    title="Upload new photo">
+                                    <i class="bi bi-camera-fill fs-6"></i>
                                 </label>
+                                <input type="file" name="profilePicture" id="profilePictureInput"
+                                    accept="image/jpeg,image/png,image/webp,image/jpg" class="d-none"
+                                    onchange="previewImage(this)">
+                            </div>
+                            <div class="mt-3">
+                                <h5 class="fw-bold mb-0 text-dark">
+                                    <%= user.name || 'Coordinator' %>
+                                </h5>
+                                <span class="badge bg-light text-primary border px-3 py-1 rounded-pill mt-1 small">
+                                    <i class="bi bi-shield-check me-1"></i> OJT Coordinator
+                                </span>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" name="name" class="form-control" value="<%= user.name || '' %>" required
-                                placeholder="Enter your full name">
+                        <!-- General & Academic Information -->
+                        <div class="bg-light rounded-4 p-4 mb-4 border">
+                            <h6 class="text-primary fw-bold mb-3 d-flex align-items-center">
+                                <i class="bi bi-person-badge-fill me-2 fs-5"></i> Academic & Professional Details
+                            </h6>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">Full Name <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" name="name" class="form-control rounded-3"
+                                        value="<%= user.name || '' %>" required placeholder="e.g., Dr. Juan Dela Cruz">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">Email Address (Account
+                                        ID)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0"><i
+                                                class="bi bi-envelope text-muted"></i></span>
+                                        <input type="email" class="form-control rounded-end border-start-0 bg-white"
+                                            value="<%= user.email %>" readonly disabled>
+                                    </div>
+                                    <small class="text-muted" style="font-size: 11px;">Primary login email cannot be
+                                        edited directly.</small>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">PSU Campus <span
+                                            class="text-danger">*</span></label>
+                                    <select name="campus" id="campusSelect" class="form-select rounded-3" required
+                                        onchange="handleCampusChange(this)">
+                                        <% const campuses=['Urdaneta', 'Lingayen' , 'Asingan' , 'Santa Maria'
+                                            , 'San Carlos' , 'Binmaley' , 'Alaminos' , 'Bayambang' , 'Infanta' , 'Tayug'
+                                            ]; %>
+                                            <option value="" disabled <%=!user.campus ? 'selected' : '' %>>Select Campus
+                                            </option>
+                                            <% campuses.forEach(c=> { %>
+                                                <option value="<%= c %>" <%=user.campus===c ? 'selected' : '' %>><%= c
+                                                        %> Campus</option>
+                                                <% }) %>
+                                                    <option value="Other" <%=user.campus &&
+                                                        !campuses.includes(user.campus) ? 'selected' : '' %>>Other /
+                                                        Custom Campus</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 <%= user.campus && !campuses.includes(user.campus) ? '' : 'd-none' %>"
+                                    id="customCampusDiv">
+                                    <label class="form-label small fw-bold text-muted">Custom Campus Name</label>
+                                    <input type="text" name="customCampus" id="customCampusInput"
+                                        class="form-control rounded-3"
+                                        value="<%= user.campus && !campuses.includes(user.campus) ? user.campus : '' %>"
+                                        placeholder="Enter campus name">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">Department / College</label>
+                                    <input type="text" name="department" class="form-control rounded-3"
+                                        value="<%= user.department || '' %>"
+                                        placeholder="e.g., College of Computing Studies">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">Coordinator Designation /
+                                        Title</label>
+                                    <input type="text" name="designation" class="form-control rounded-3"
+                                        value="<%= user.designation || '' %>" placeholder="e.g., Lead OJT Coordinator">
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Campus</label>
-                            <input type="text" name="campus" class="form-control" value="<%= user.campus || '' %>"
-                                required placeholder="Enter your campus (e.g., Main Campus, North Campus)">
+                        <!-- Office & Consultation Information -->
+                        <div class="bg-light rounded-4 p-4 mb-4 border">
+                            <h6 class="text-primary fw-bold mb-3 d-flex align-items-center">
+                                <i class="bi bi-clock-history me-2 fs-5"></i> Office & Contact Availability
+                            </h6>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">Contact / Mobile Number</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0"><i
+                                                class="bi bi-telephone text-muted"></i></span>
+                                        <input type="tel" name="contactNumber"
+                                            class="form-control rounded-end border-start-0"
+                                            value="<%= user.contactNumber || '' %>"
+                                            placeholder="e.g., +63 912 345 6789">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">Office / Consultation
+                                        Room</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0"><i
+                                                class="bi bi-geo-alt text-muted"></i></span>
+                                        <input type="text" name="officeLocation"
+                                            class="form-control rounded-end border-start-0"
+                                            value="<%= user.officeLocation || '' %>"
+                                            placeholder="e.g., CCS Faculty Office, Rm 204">
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-muted">Consultation / Office
+                                        Hours</label>
+                                    <input type="text" name="officeHours" class="form-control rounded-3"
+                                        value="<%= user.officeHours || '' %>"
+                                        placeholder="e.g., Monday to Friday: 8:00 AM - 5:00 PM">
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-muted">Coordinator Note / Bio</label>
+                                    <textarea name="bio" class="form-control rounded-3" rows="3"
+                                        placeholder="Add a welcome message or special instructions for your internship students..."><%= user.bio || '' %></textarea>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
-                            <a href="/coordinator/dashboard" class="btn btn-secondary">Cancel</a>
+                        <!-- Security & Password Change Section (Collapsible) -->
+                        <div class="card border rounded-4 mb-5 overflow-hidden">
+                            <div class="card-header bg-white p-3 border-0 d-flex justify-content-between align-items-center"
+                                style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#passwordCollapse">
+                                <span class="fw-bold text-dark d-flex align-items-center">
+                                    <i class="bi bi-shield-lock-fill text-primary me-2 fs-5"></i> Change Password
+                                </span>
+                                <i class="bi bi-chevron-down text-muted"></i>
+                            </div>
+
+                            <div class="collapse" id="passwordCollapse">
+                                <div class="card-body p-4 bg-light border-top">
+                                    <p class="small text-muted mb-3">Leave these fields blank if you do not wish to
+                                        change your password.</p>
+                                    <div class="row g-3">
+                                        <div class="col-md-12">
+                                            <label class="form-label small fw-bold text-muted">Current Password</label>
+                                            <div class="input-group">
+                                                <input type="password" name="currentPassword" id="currentPassword"
+                                                    class="form-control rounded-start"
+                                                    placeholder="Enter current password">
+                                                <button class="btn btn-outline-secondary" type="button"
+                                                    onclick="togglePasswordVisibility('currentPassword', this)">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-muted">New Password</label>
+                                            <div class="input-group">
+                                                <input type="password" name="newPassword" id="newPassword"
+                                                    class="form-control rounded-start" placeholder="Min. 6 characters">
+                                                <button class="btn btn-outline-secondary" type="button"
+                                                    onclick="togglePasswordVisibility('newPassword', this)">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-muted">Confirm New
+                                                Password</label>
+                                            <div class="input-group">
+                                                <input type="password" name="confirmPassword" id="confirmPassword"
+                                                    class="form-control rounded-start"
+                                                    placeholder="Repeat new password">
+                                                <button class="btn btn-outline-secondary" type="button"
+                                                    onclick="togglePasswordVisibility('confirmPassword', this)">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex flex-column flex-sm-row justify-content-end align-items-center gap-3">
+                            <a href="/coordinator/dashboard"
+                                class="btn btn-light rounded-pill px-4 py-2 fw-bold text-muted border w-100 w-sm-auto order-2 order-sm-1">
+                                Cancel
+                            </a>
+                            <button type="submit" id="saveProfileBtn"
+                                class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm w-100 w-sm-auto order-1 order-sm-2">
+                                <i class="bi bi-check-lg me-2"></i> Save Changes
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
@@ -46,11 +259,99 @@
 <script>
     function previewImage(input) {
         if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const fileSizeMB = file.size / (1024 * 1024);
+            if (fileSizeMB > 10) {
+                if (window.showToast) {
+                    window.showToast('Selected image exceeds 10MB. Please choose a smaller photo.', 'warning');
+                } else {
+                    alert('File size exceeds 10MB.');
+                }
+                input.value = '';
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = function (e) {
-                document.getElementById('profilePreview').src = e.target.result;
+                const preview = document.getElementById('profilePreview');
+                if (preview) preview.src = e.target.result;
             };
-            reader.readAsDataURL(input.files[0]);
+            reader.readAsDataURL(file);
         }
     }
+
+    function handleCampusChange(select) {
+        const customDiv = document.getElementById('customCampusDiv');
+        const customInput = document.getElementById('customCampusInput');
+        if (select.value === 'Other') {
+            if (customDiv) customDiv.classList.remove('d-none');
+            if (customInput) customInput.setAttribute('required', 'required');
+        } else {
+            if (customDiv) customDiv.classList.add('d-none');
+            if (customInput) customInput.removeAttribute('required');
+        }
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            if (icon) {
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            }
+        } else {
+            input.type = 'password';
+            if (icon) {
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+    }
+
+    let isProfileSubmitting = false;
+    document.getElementById('coordinatorProfileForm')?.addEventListener('submit', function (e) {
+        if (isProfileSubmitting) {
+            e.preventDefault();
+            return;
+        }
+
+        const newPass = document.getElementById('newPassword')?.value;
+        const confirmPass = document.getElementById('confirmPassword')?.value;
+        const currentPass = document.getElementById('currentPassword')?.value;
+
+        if (newPass && newPass.trim()) {
+            if (!currentPass || !currentPass.trim()) {
+                e.preventDefault();
+                if (window.showToast) window.showToast('Please enter your current password to proceed.', 'warning');
+                return;
+            }
+            if (newPass.length < 6) {
+                e.preventDefault();
+                if (window.showToast) window.showToast('New password must be at least 6 characters.', 'warning');
+                return;
+            }
+            if (newPass !== confirmPass) {
+                e.preventDefault();
+                if (window.showToast) window.showToast('New passwords do not match.', 'danger');
+                return;
+            }
+        }
+
+        // Apply custom campus if selected
+        const campusSelect = document.getElementById('campusSelect');
+        const customInput = document.getElementById('customCampusInput');
+        if (campusSelect && campusSelect.value === 'Other' && customInput && customInput.value.trim()) {
+            campusSelect.value = customInput.value.trim();
+        }
+
+        isProfileSubmitting = true;
+        const btn = document.getElementById('saveProfileBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Saving Changes...';
+        }
+    });
 </script>
