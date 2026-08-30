@@ -85,7 +85,8 @@
                 <form id="announcementForm">
                   <div class="d-flex align-items-start mb-3">
                     <img src="<%= user.profilePicture || '/images/default-avatar.png' %>"
-                      class="rounded-circle me-3 border" style="width: 45px; height: 45px; object-fit: cover;">
+                      onerror="this.src='/images/profile-placeholder.png'" class="rounded-circle me-3 border"
+                      style="width: 45px; height: 45px; object-fit: cover;">
 
                     <div class="flex-grow-1">
                       <input type="text" name="title"
@@ -131,7 +132,8 @@
                         <div class="d-flex justify-content-between align-items-start">
                           <div class="d-flex align-items-center">
                             <img src="<%= announcement.author?.profilePicture || '/images/default-avatar.png' %>"
-                              class="rounded-circle me-3" style="width: 42px; height: 42px; object-fit: cover;">
+                              onerror="this.src='/images/profile-placeholder.png'" class="rounded-circle me-3"
+                              style="width: 42px; height: 42px; object-fit: cover;">
                             <div>
                               <div class="mb-0">
                                 <span class="post-author-name">
@@ -164,7 +166,8 @@
                           <div class="text-center">
                             <img src="<%= announcement.imageUrl %>" class="img-fluid rounded mb-3 clickable-image"
                               style="aspect-ratio: 1 / 1; width: 100%; max-width: 400px; object-fit: cover; cursor: pointer;"
-                              data-bs-toggle="modal" data-bs-target="#imageModal" onclick="prepareModal(this.src)">
+                              data-bs-toggle="modal" data-bs-target="#imageModal" onclick="prepareModal(this.src)"
+                              onerror="this.parentElement.style.display='none'">
                           </div>
                           <% } %>
 
@@ -178,7 +181,8 @@
                                 <form class="comment-form d-flex gap-2 mb-3"
                                   data-announcement="<%= announcement._id %>">
                                   <img src="<%= user.profilePicture || '/images/default-avatar.png' %>"
-                                    class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
+                                    onerror="this.src='/images/profile-placeholder.png'" class="rounded-circle"
+                                    style="width: 32px; height: 32px; object-fit: cover;">
                                   <div class="flex-grow-1">
                                     <input type="text" class="form-control rounded-pill"
                                       placeholder="Write a comment...">
@@ -190,7 +194,8 @@
                                   <% (announcement.comments || []).forEach(comment=> { %>
                                     <div class="d-flex gap-2 mb-2">
                                       <img src="<%= comment.author?.profilePicture || '/images/default-avatar.png' %>"
-                                        class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
+                                        onerror="this.src='/images/profile-placeholder.png'" class="rounded-circle"
+                                        style="width: 32px; height: 32px; object-fit: cover;">
                                       <div class="bg-light rounded-3 p-2 flex-grow-1">
                                         <div class="fw-bold">
                                           <%= comment.author?.name || comment.author?.email %>
@@ -411,6 +416,7 @@
                                         <div class="d-flex align-items-center">
                                           <img
                                             src="<%= app.profile.personalData?.profilePicture || '/images/default-avatar.png' %>"
+                                            onerror="this.src='/images/profile-placeholder.png'"
                                             class="rounded-circle me-3"
                                             style="width: 48px; height: 48px; object-fit: cover;">
                                           <div>
@@ -595,7 +601,9 @@
                   </div>
                   <div>
                     <small class="text-muted d-block">Total Partner Companies</small>
-                    <h4 class="mb-0 fw-bold"><%= reportsData.totalCompanies %></h4>
+                    <h4 class="mb-0 fw-bold">
+                      <%= reportsData.totalCompanies %>
+                    </h4>
                   </div>
                 </div>
               </div>
@@ -610,7 +618,9 @@
                   </div>
                   <div>
                     <small class="text-muted d-block">Students Currently Interning</small>
-                    <h4 class="mb-0 fw-bold"><%= reportsData.totalStudentsInterning %></h4>
+                    <h4 class="mb-0 fw-bold">
+                      <%= reportsData.totalStudentsInterning %>
+                    </h4>
                   </div>
                 </div>
               </div>
@@ -625,22 +635,26 @@
               </h5>
             </div>
             <div class="card-body p-4">
-              <% if (reportsData.companies && reportsData.companies.length > 0) { %>
+              <% if (reportsData.companies && reportsData.companies.length> 0) { %>
                 <div class="row g-3">
-                  <% reportsData.companies.forEach(company => { %>
+                  <% reportsData.companies.forEach(company=> { %>
                     <div class="col-md-6 col-lg-4">
                       <div class="card h-100 border-start border-primary border-4 shadow-sm">
                         <div class="card-body">
                           <h6 class="card-title fw-bold text-primary mb-2">
-                            <i class="bi bi-building me-2"></i><%= company.name %>
+                            <i class="bi bi-building me-2"></i>
+                            <%= company.name %>
                           </h6>
                           <p class="text-muted small mb-2">
-                            <i class="bi bi-geo-alt me-1"></i><%= company.location %>
+                            <i class="bi bi-geo-alt me-1"></i>
+                            <%= company.location %>
                           </p>
                           <div class="d-flex align-items-center justify-content-between bg-light rounded-2 p-3">
                             <div>
                               <small class="text-muted d-block">Students</small>
-                              <h6 class="mb-0 fw-bold text-primary"><%= company.studentCount %></h6>
+                              <h6 class="mb-0 fw-bold text-primary">
+                                <%= company.studentCount %>
+                              </h6>
                             </div>
                             <div class="text-end">
                               <small class="text-muted d-block">Interns</small>
@@ -650,14 +664,14 @@
                         </div>
                       </div>
                     </div>
-                  <% }); %>
+                    <% }); %>
                 </div>
-              <% } else { %>
-                <div class="text-center text-muted py-5">
-                  <i class="bi bi-inbox display-1 mb-3"></i>
-                  <p>No students have applied to partner companies yet.</p>
-                </div>
-              <% } %>
+                <% } else { %>
+                  <div class="text-center text-muted py-5">
+                    <i class="bi bi-inbox display-1 mb-3"></i>
+                    <p>No students have applied to partner companies yet.</p>
+                  </div>
+                  <% } %>
             </div>
           </div>
 
@@ -669,62 +683,73 @@
               </h5>
             </div>
             <div class="card-body p-4">
-              <% if (reportsData.campusMAOStats && reportsData.campusMAOStats.length > 0) { %>
+              <% if (reportsData.campusMAOStats && reportsData.campusMAOStats.length> 0) { %>
                 <div class="row g-4">
-                  <% reportsData.campusMAOStats.forEach(stat => { 
+                  <% reportsData.campusMAOStats.forEach(stat=> {
                     const donePercent = stat.total > 0 ? Math.round((stat.done / stat.total) * 100) : 0;
                     const submittedPercent = stat.total > 0 ? Math.round((stat.submitted / stat.total) * 100) : 0;
-                  %>
+                    %>
                     <div class="col-md-6 col-lg-4">
                       <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body">
                           <h6 class="card-title fw-bold mb-3">
-                            <i class="bi bi-bookmark-star text-warning me-2"></i><%= stat.campus %>
+                            <i class="bi bi-bookmark-star text-warning me-2"></i>
+                            <%= stat.campus %>
                           </h6>
-                          
+
                           <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                               <small class="text-muted">MOA Completed</small>
-                              <span class="badge bg-success"><%= stat.done %>/<%= stat.total %></span>
+                              <span class="badge bg-success">
+                                <%= stat.done %>/<%= stat.total %>
+                              </span>
                             </div>
                             <div class="progress" style="height: 8px;">
-                              <div class="progress-bar bg-success" role="progressbar" 
-                                style="width: <%= donePercent %>%;" 
-                                aria-valuenow="<%= stat.done %>" aria-valuemin="0" aria-valuemax="<%= stat.total %>">
+                              <div class="progress-bar bg-success" role="progressbar"
+                                style="width: <%= donePercent %>%;" aria-valuenow="<%= stat.done %>" aria-valuemin="0"
+                                aria-valuemax="<%= stat.total %>">
                               </div>
                             </div>
-                            <small class="text-muted"><%= donePercent %>% Done</small>
+                            <small class="text-muted">
+                              <%= donePercent %>% Done
+                            </small>
                           </div>
 
                           <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                               <small class="text-muted">MOA Submitted</small>
-                              <span class="badge bg-warning text-dark"><%= stat.submitted %>/<%= stat.total %></span>
+                              <span class="badge bg-warning text-dark">
+                                <%= stat.submitted %>/<%= stat.total %>
+                              </span>
                             </div>
                             <div class="progress" style="height: 8px;">
-                              <div class="progress-bar bg-warning" role="progressbar" 
-                                style="width: <%= submittedPercent %>%;" 
-                                aria-valuenow="<%= stat.submitted %>" aria-valuemin="0" aria-valuemax="<%= stat.total %>">
+                              <div class="progress-bar bg-warning" role="progressbar"
+                                style="width: <%= submittedPercent %>%;" aria-valuenow="<%= stat.submitted %>"
+                                aria-valuemin="0" aria-valuemax="<%= stat.total %>">
                               </div>
                             </div>
-                            <small class="text-muted"><%= submittedPercent %>% Submitted</small>
+                            <small class="text-muted">
+                              <%= submittedPercent %>% Submitted
+                            </small>
                           </div>
 
                           <div class="bg-light rounded-2 p-2 text-center">
                             <small class="text-muted d-block">Total Students</small>
-                            <h6 class="mb-0 fw-bold text-primary"><%= stat.total %></h6>
+                            <h6 class="mb-0 fw-bold text-primary">
+                              <%= stat.total %>
+                            </h6>
                           </div>
                         </div>
                       </div>
                     </div>
-                  <% }); %>
+                    <% }); %>
                 </div>
-              <% } else { %>
-                <div class="text-center text-muted py-5">
-                  <i class="bi bi-graph-up display-1 mb-3"></i>
-                  <p>No MOA data available yet.</p>
-                </div>
-              <% } %>
+                <% } else { %>
+                  <div class="text-center text-muted py-5">
+                    <i class="bi bi-graph-up display-1 mb-3"></i>
+                    <p>No MOA data available yet.</p>
+                  </div>
+                  <% } %>
             </div>
           </div>
 
@@ -737,50 +762,60 @@
             </div>
             <div class="card-body p-4">
               <div class="row g-4">
-                <% 
-                  let overallDone = 0, overallSubmitted = 0, overallStudents = 0;
-                  reportsData.campusMAOStats.forEach(stat => {
-                    overallDone += stat.done;
-                    overallSubmitted += stat.submitted;
-                    overallStudents += stat.total;
+                <% let overallDone=0, overallSubmitted=0, overallStudents=0; reportsData.campusMAOStats.forEach(stat=> {
+                  overallDone += stat.done;
+                  overallSubmitted += stat.submitted;
+                  overallStudents += stat.total;
                   });
-                  const overallDonePercent = overallStudents > 0 ? Math.round((overallDone / overallStudents) * 100) : 0;
-                  const overallSubmittedPercent = overallStudents > 0 ? Math.round((overallSubmitted / overallStudents) * 100) : 0;
+                  const overallDonePercent = overallStudents > 0 ? Math.round((overallDone / overallStudents) * 100) :
+                  0;
+                  const overallSubmittedPercent = overallStudents > 0 ? Math.round((overallSubmitted / overallStudents)
+                  * 100) : 0;
                   const overallPendingPercent = 100 - overallDonePercent - overallSubmittedPercent;
-                %>
-                <div class="col-md-6">
-                  <div class="text-center">
-                    <div class="mb-3">
-                      <canvas id="moaChart"></canvas>
-                    </div>
-                    <p class="text-muted small">Overall MOA Status Distribution</p>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="list-group list-group-flush">
-                    <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
-                      <div>
-                        <h6 class="mb-1 fw-bold">MOA Completed</h6>
-                        <small class="text-muted"><%= overallDone %> out of <%= overallStudents %> students</small>
+                  %>
+                  <div class="col-md-6">
+                    <div class="text-center">
+                      <div class="mb-3">
+                        <canvas id="moaChart"></canvas>
                       </div>
-                      <span class="badge bg-success rounded-pill"><%= overallDonePercent %>%</span>
-                    </div>
-                    <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
-                      <div>
-                        <h6 class="mb-1 fw-bold">MOA Submitted</h6>
-                        <small class="text-muted"><%= overallSubmitted %> out of <%= overallStudents %> students</small>
-                      </div>
-                      <span class="badge bg-warning text-dark rounded-pill"><%= overallSubmittedPercent %>%</span>
-                    </div>
-                    <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
-                      <div>
-                        <h6 class="mb-1 fw-bold">Pending</h6>
-                        <small class="text-muted">Awaiting submission</small>
-                      </div>
-                      <span class="badge bg-secondary rounded-pill"><%= overallPendingPercent %>%</span>
+                      <p class="text-muted small">Overall MOA Status Distribution</p>
                     </div>
                   </div>
-                </div>
+                  <div class="col-md-6">
+                    <div class="list-group list-group-flush">
+                      <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                        <div>
+                          <h6 class="mb-1 fw-bold">MOA Completed</h6>
+                          <small class="text-muted">
+                            <%= overallDone %> out of <%= overallStudents %> students
+                          </small>
+                        </div>
+                        <span class="badge bg-success rounded-pill">
+                          <%= overallDonePercent %>%
+                        </span>
+                      </div>
+                      <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                        <div>
+                          <h6 class="mb-1 fw-bold">MOA Submitted</h6>
+                          <small class="text-muted">
+                            <%= overallSubmitted %> out of <%= overallStudents %> students
+                          </small>
+                        </div>
+                        <span class="badge bg-warning text-dark rounded-pill">
+                          <%= overallSubmittedPercent %>%
+                        </span>
+                      </div>
+                      <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                        <div>
+                          <h6 class="mb-1 fw-bold">Pending</h6>
+                          <small class="text-muted">Awaiting submission</small>
+                        </div>
+                        <span class="badge bg-secondary rounded-pill">
+                          <%= overallPendingPercent %>%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
               </div>
             </div>
           </div>
@@ -808,7 +843,8 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Campus</label>
-            <input type="text" name="campus" class="form-control" required placeholder="Enter campus (e.g., Main Campus, North Campus)">
+            <input type="text" name="campus" class="form-control" required
+              placeholder="Enter campus (e.g., Main Campus, North Campus)">
           </div>
           <div class="mb-3">
             <label class="form-label">Password</label>
@@ -853,22 +889,29 @@
         throw new Error(error.message || 'Failed to create announcement');
       }
 
-      window.location.reload();
+      showToast('Announcement posted successfully!', 'success');
+      setTimeout(() => window.location.reload(), 600);
     } catch (err) {
-      alert('Error creating announcement: ' + err.message);
+      showToast('Error creating announcement: ' + err.message, 'danger');
     }
   });
 
   function removeImage() {
     const input = document.getElementById('announcementImage');
     const preview = document.getElementById('imagePreview');
-    input.value = '';
-    preview.style.display = 'none';
+    if (input) input.value = '';
+    if (preview) preview.style.display = 'none';
   }
 
   document.querySelectorAll('.delete-announcement').forEach(button => {
     button.addEventListener('click', async () => {
-      if (!confirm('Are you sure you want to delete this announcement?')) return;
+      const confirmed = await showConfirmModal({
+        title: 'Delete Announcement',
+        message: 'Are you sure you want to delete this announcement? This action cannot be undone.',
+        confirmBtnClass: 'btn-danger',
+        confirmText: 'Delete'
+      });
+      if (!confirmed) return;
 
       const id = button.dataset.id;
       try {
@@ -880,14 +923,13 @@
           const card = button.closest('.custom-post-card');
           if (card) {
             card.remove();
-          } else {
-            window.location.reload();
           }
+          showToast('Announcement deleted successfully', 'success');
         } else {
           throw new Error('Failed to delete announcement');
         }
       } catch (err) {
-        alert('Error deleting announcement: ' + err.message);
+        showToast('Error deleting announcement: ' + err.message, 'danger');
       }
     });
   });
@@ -932,6 +974,7 @@
         const commentHtml = `
                 <div class="d-flex gap-2 mb-2">
                     <img src="${(comment.author && comment.author.profilePicture) || '/images/default-avatar.png'}"
+                         onerror="this.src='/images/profile-placeholder.png'"
                          class="rounded-circle" style="width:32px;height:32px;object-fit:cover;">
                     <div class="bg-light rounded-3 p-2 flex-grow-1">
                         <div class="fw-bold">${(comment.author && comment.author.name) || (comment.author && comment.author.email) || 'User'}</div>
@@ -946,11 +989,13 @@
         commentBtn.innerHTML = `<i class="bi bi-chat"></i> Comments (${currentCount + 1})`;
 
         input.value = '';
+        showToast('Comment posted successfully', 'success');
       } catch (err) {
-        alert('Error posting comment: ' + err.message);
+        showToast('Error posting comment: ' + err.message, 'danger');
       }
     });
   });
+
   document.getElementById('addCoordinatorForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -962,22 +1007,29 @@
       });
       const result = await response.json();
       if (response.ok) {
-        alert('Coordinator account created successfully');
+        showToast('Coordinator account created successfully', 'success');
         e.target.reset();
         const modal = bootstrap.Modal.getInstance(document.getElementById('addCoordinatorModal'));
-        modal.hide();
-        window.location.reload();
+        if (modal) modal.hide();
+        setTimeout(() => window.location.reload(), 600);
       } else {
-        alert(result.error || 'Failed to create coordinator account');
+        showToast(result.error || 'Failed to create coordinator account', 'danger');
       }
     } catch (err) {
-      alert('Error creating coordinator account');
+      showToast('Error creating coordinator account: ' + err.message, 'danger');
     }
   });
 
   document.querySelectorAll('.delete-coordinator').forEach(btn => {
     btn.addEventListener('click', async () => {
-      if (!confirm('Delete this coordinator? This will remove the account.')) return;
+      const confirmed = await showConfirmModal({
+        title: 'Delete Coordinator',
+        message: 'Delete this coordinator? This will permanently remove the coordinator account.',
+        confirmBtnClass: 'btn-danger',
+        confirmText: 'Delete'
+      });
+      if (!confirmed) return;
+
       const id = btn.dataset.id;
       try {
         const response = await fetch(`/coordinator/${id}`, {
@@ -986,13 +1038,13 @@
         });
         if (response.ok) {
           document.getElementById(`coordinator-${id}`)?.remove();
-          alert('Coordinator deleted successfully');
+          showToast('Coordinator deleted successfully', 'success');
         } else {
           const error = await response.json();
-          alert(error.error || 'Failed to delete coordinator');
+          showToast(error.error || 'Failed to delete coordinator', 'danger');
         }
       } catch (err) {
-        alert('Error deleting coordinator: ' + err.message);
+        showToast('Error deleting coordinator: ' + err.message, 'danger');
       }
     });
   });
@@ -1000,62 +1052,65 @@
   document.querySelectorAll('.approve-student').forEach(button => {
     button.addEventListener('click', async (e) => {
       const userId = e.target.dataset.id;
+      const confirmed = await showConfirmModal({
+        title: 'Approve Student Account',
+        message: 'Are you sure you want to approve and activate this student account?',
+        confirmBtnClass: 'btn-success',
+        confirmText: 'Approve'
+      });
+      if (!confirmed) return;
+
       try {
-        const response = await fetch(`/api/coordinator/approve-student/${userId}`, {
+        const response = await fetch(`/coordinator/approve-student/${userId}`, {
           method: 'PUT',
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
-        if (response.ok) window.location.reload();
-      } catch (err) { alert('Error approving student'); }
+        if (response.ok) {
+          showToast('Student account approved successfully', 'success');
+          setTimeout(() => window.location.reload(), 600);
+        } else {
+          showToast('Error approving student account', 'danger');
+        }
+      } catch (err) {
+        showToast('Error approving student: ' + err.message, 'danger');
+      }
     });
   });
 
   document.querySelectorAll('.reject-student').forEach(button => {
-    button.addEventListener('click', () => {
-      if (confirm('Reject this student account request?')) {
+    button.addEventListener('click', async () => {
+      const confirmed = await showConfirmModal({
+        title: 'Reject Student Request',
+        message: 'Are you sure you want to reject this student account request?',
+        confirmBtnClass: 'btn-danger',
+        confirmText: 'Reject'
+      });
+      if (confirmed) {
         const row = button.closest('tr');
         row?.remove();
-        alert('Account request removed from view. Backend reject may not be implemented.');
+        showToast('Account request rejected and removed from view.', 'info');
       }
     });
   });
+
   document.getElementById('announcementImage')?.addEventListener('change', function (e) {
     const preview = document.getElementById('imagePreview');
-    const img = preview.querySelector('img');
+    if (!preview) return;
+    const img = preview.tagName === 'IMG' ? preview : preview.querySelector('img');
 
     if (this.files && this.files[0]) {
       const reader = new FileReader();
       reader.onload = function (e) {
-        img.src = e.target.result;
-        preview.style.display = 'block';
+        if (img) img.src = e.target.result;
+        const container = document.getElementById('previewContainer') || preview;
+        container.classList.remove('d-none');
+        container.style.display = 'block';
       }
       reader.readAsDataURL(this.files[0]);
     } else {
-      preview.style.display = 'none';
-    }
-  });
-
-  document.getElementById('addCoordinatorForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    try {
-      const response = await fetch('/api/coordinator/create-coordinator', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.fromEntries(formData))
-      });
-      const result = await response.json();
-      if (response.ok) {
-        alert('Coordinator account created successfully');
-        e.target.reset();
-        const modal = bootstrap.Modal.getInstance(document.getElementById('addCoordinatorModal'));
-        modal.hide();
-        window.location.reload();
-      } else {
-        alert(result.error || 'Failed to create coordinator account');
-      }
-    } catch (err) {
-      alert('Error creating coordinator account');
+      const container = document.getElementById('previewContainer') || preview;
+      container.classList.add('d-none');
+      container.style.display = 'none';
     }
   });
 
@@ -1108,35 +1163,35 @@
   // Initialize MOA Chart
   const moaChartCanvas = document.getElementById('moaChart');
   if (moaChartCanvas) {
-    <% 
+    <%
       let chartDone = 0, chartSubmitted = 0, chartStudents = 0;
-      reportsData.campusMAOStats.forEach(stat => {
-        chartDone += stat.done;
-        chartSubmitted += stat.submitted;
-        chartStudents += stat.total;
-      });
-      const chartPendingCount = chartStudents - chartDone - chartSubmitted;
+    reportsData.campusMAOStats.forEach(stat => {
+      chartDone += stat.done;
+      chartSubmitted += stat.submitted;
+      chartStudents += stat.total;
+    });
+    const chartPendingCount = chartStudents - chartDone - chartSubmitted;
     %>
-    new Chart(moaChartCanvas, {
-      type: 'doughnut',
-      data: {
-        labels: ['Completed', 'Submitted', 'Pending'],
-        datasets: [{
-          data: [<%= chartDone %>, <%= chartSubmitted %>, <%= chartPendingCount %>],
-          backgroundColor: ['#198754', '#ffc107', '#6c757d'],
-          borderColor: '#fff',
-          borderWidth: 2
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'bottom'
+      new Chart(moaChartCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: ['Completed', 'Submitted', 'Pending'],
+          datasets: [{
+            data: [<%= chartDone %>, <%= chartSubmitted %>, <%= chartPendingCount %>],
+            backgroundColor: ['#198754', '#ffc107', '#6c757d'],
+            borderColor: '#fff',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
           }
         }
-      }
-    });
+      });
   }
 </script>
 
@@ -1157,3 +1212,5 @@
     border-bottom: 1px solid #f0f0f0 !important;
   }
 </style>
+
+<%- include('../partials/chatbot') %>

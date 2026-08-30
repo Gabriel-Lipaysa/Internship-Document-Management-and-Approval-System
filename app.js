@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-const cookieParser = require('cookie-parser'); 
+const cookieParser = require('cookie-parser');
 const config = require('./config/config');
 const errorHandler = require('./middleware/errorHandler');
 const routes = require('./routes');
@@ -26,16 +26,16 @@ app.use(expressLayouts);
 app.set('layout', 'layouts/main');
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use(express.static(path.join(__dirname, 'public')));
 
+// Static assets
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads/announcements', express.static(path.join(__dirname, 'uploads/announcements')));
 app.use('/uploads/profile-pictures', express.static(path.join(__dirname, 'uploads/profile-pictures')));
 app.use('/uploads/documents', express.static(path.join(__dirname, 'uploads/documents')));
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
-
-app.use('/templates', express.static(path.join(__dirname, 'templates')));
-app.use('/public', express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const createDirectory = (dirPath) => {
     try {
@@ -50,12 +50,25 @@ const createDirectory = (dirPath) => {
 
 const requiredDirs = [
     path.join(__dirname, 'templates'),
+    path.join(__dirname, 'uploads'),
+    path.join(__dirname, 'uploads/announcements'),
     path.join(__dirname, 'uploads/documents'),
     path.join(__dirname, 'uploads/profile-pictures'),
     path.join(__dirname, 'public/images')
 ];
 
 requiredDirs.forEach(createDirectory);
+
+// Ensure default avatar placeholder exists
+const placeholderPic = path.join(__dirname, 'public/images/profile-placeholder.png');
+const defaultAvatarPic = path.join(__dirname, 'public/images/default-avatar.png');
+if (fs.existsSync(placeholderPic) && !fs.existsSync(defaultAvatarPic)) {
+    try {
+        fs.copyFileSync(placeholderPic, defaultAvatarPic);
+    } catch (e) {
+        console.error('Error ensuring default avatar:', e);
+    }
+}
 
 app.use((err, req, res, next) => {
     console.error(err);
@@ -74,15 +87,15 @@ app.use((err, req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-    res.render('auth/login', { 
+    res.render('auth/login', {
         error: req.query.error,
-        message: req.query.message 
+        message: req.query.message
     });
 });
 app.get('/register', (req, res) => res.render('auth/register'));
 
-app.use('/api', routes);  
-app.use('/', routes);   
+app.use('/api', routes);
+app.use('/', routes);
 
 const studentRoutes = require('./routes/student');
 const coordinatorRoutes = require('./routes/coordinator');
@@ -95,7 +108,7 @@ app.use('/director', directorRoutes);
 app.use((err, req, res, next) => {
     if (!req.path.startsWith('/api')) {
         console.error(err);
-        return res.render('error', { 
+        return res.render('error', {
             message: 'Something went wrong!',
             error: process.env.NODE_ENV === 'development' ? err : {}
         });
@@ -104,10 +117,10 @@ app.use((err, req, res, next) => {
 });
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'client/build')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client/build/index.html'));
-  });
+    app.use(express.static(path.join(__dirname, 'client/build')));
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, 'client/build/index.html'));
+    });
 }
 
 app.use(errorHandler);

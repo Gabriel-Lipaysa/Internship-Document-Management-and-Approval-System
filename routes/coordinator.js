@@ -6,6 +6,7 @@ const auth = require('../middleware/auth');
 const path = require('path');
 const fs = require('fs');
 const { profileUpload, announcementUpload, getUploadedFileUrl } = require('../utils/storage');
+const ChatbotService = require('../services/chatbotService');
 
 router.post('/create-coordinator', auth('coordinator'), async (req, res) => {
     const { email, password, name, campus } = req.body;
@@ -523,6 +524,21 @@ router.delete('/document-comment/:docId/:commentIndex', auth('coordinator'), asy
     } catch (err) {
         console.error('Delete comment error:', err);
         res.status(500).json({ error: 'Failed to delete comment' });
+    }
+});
+
+router.post('/chatbot', auth('coordinator'), async (req, res) => {
+    try {
+        const { message } = req.body;
+        if (!message || !message.trim()) {
+            return res.status(400).json({ error: 'Message cannot be empty' });
+        }
+
+        const reply = await ChatbotService.getReply(message, 'coordinator');
+        res.json({ response: reply });
+    } catch (err) {
+        console.error('Coordinator chatbot error:', err);
+        res.status(500).json({ error: err.message || 'Chatbot service error' });
     }
 });
 
