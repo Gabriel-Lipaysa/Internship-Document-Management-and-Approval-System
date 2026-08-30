@@ -595,7 +595,9 @@
                   </div>
                   <div>
                     <small class="text-muted d-block">Total Partner Companies</small>
-                    <h4 class="mb-0 fw-bold"><%= reportsData.totalCompanies %></h4>
+                    <h4 class="mb-0 fw-bold">
+                      <%= reportsData.totalCompanies %>
+                    </h4>
                   </div>
                 </div>
               </div>
@@ -610,7 +612,9 @@
                   </div>
                   <div>
                     <small class="text-muted d-block">Students Currently Interning</small>
-                    <h4 class="mb-0 fw-bold"><%= reportsData.totalStudentsInterning %></h4>
+                    <h4 class="mb-0 fw-bold">
+                      <%= reportsData.totalStudentsInterning %>
+                    </h4>
                   </div>
                 </div>
               </div>
@@ -625,22 +629,26 @@
               </h5>
             </div>
             <div class="card-body p-4">
-              <% if (reportsData.companies && reportsData.companies.length > 0) { %>
+              <% if (reportsData.companies && reportsData.companies.length> 0) { %>
                 <div class="row g-3">
-                  <% reportsData.companies.forEach(company => { %>
+                  <% reportsData.companies.forEach(company=> { %>
                     <div class="col-md-6 col-lg-4">
                       <div class="card h-100 border-start border-primary border-4 shadow-sm">
                         <div class="card-body">
                           <h6 class="card-title fw-bold text-primary mb-2">
-                            <i class="bi bi-building me-2"></i><%= company.name %>
+                            <i class="bi bi-building me-2"></i>
+                            <%= company.name %>
                           </h6>
                           <p class="text-muted small mb-2">
-                            <i class="bi bi-geo-alt me-1"></i><%= company.location %>
+                            <i class="bi bi-geo-alt me-1"></i>
+                            <%= company.location %>
                           </p>
                           <div class="d-flex align-items-center justify-content-between bg-light rounded-2 p-3">
                             <div>
                               <small class="text-muted d-block">Students</small>
-                              <h6 class="mb-0 fw-bold text-primary"><%= company.studentCount %></h6>
+                              <h6 class="mb-0 fw-bold text-primary">
+                                <%= company.studentCount %>
+                              </h6>
                             </div>
                             <div class="text-end">
                               <small class="text-muted d-block">Interns</small>
@@ -650,14 +658,14 @@
                         </div>
                       </div>
                     </div>
-                  <% }); %>
+                    <% }); %>
                 </div>
-              <% } else { %>
-                <div class="text-center text-muted py-5">
-                  <i class="bi bi-inbox display-1 mb-3"></i>
-                  <p>No students have applied to partner companies yet.</p>
-                </div>
-              <% } %>
+                <% } else { %>
+                  <div class="text-center text-muted py-5">
+                    <i class="bi bi-inbox display-1 mb-3"></i>
+                    <p>No students have applied to partner companies yet.</p>
+                  </div>
+                  <% } %>
             </div>
           </div>
 
@@ -669,62 +677,73 @@
               </h5>
             </div>
             <div class="card-body p-4">
-              <% if (reportsData.campusMAOStats && reportsData.campusMAOStats.length > 0) { %>
+              <% if (reportsData.campusMAOStats && reportsData.campusMAOStats.length> 0) { %>
                 <div class="row g-4">
-                  <% reportsData.campusMAOStats.forEach(stat => { 
+                  <% reportsData.campusMAOStats.forEach(stat=> {
                     const donePercent = stat.total > 0 ? Math.round((stat.done / stat.total) * 100) : 0;
                     const submittedPercent = stat.total > 0 ? Math.round((stat.submitted / stat.total) * 100) : 0;
-                  %>
+                    %>
                     <div class="col-md-6 col-lg-4">
                       <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body">
                           <h6 class="card-title fw-bold mb-3">
-                            <i class="bi bi-bookmark-star text-warning me-2"></i><%= stat.campus %>
+                            <i class="bi bi-bookmark-star text-warning me-2"></i>
+                            <%= stat.campus %>
                           </h6>
-                          
+
                           <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                               <small class="text-muted">MOA Completed</small>
-                              <span class="badge bg-success"><%= stat.done %>/<%= stat.total %></span>
+                              <span class="badge bg-success">
+                                <%= stat.done %>/<%= stat.total %>
+                              </span>
                             </div>
                             <div class="progress" style="height: 8px;">
-                              <div class="progress-bar bg-success" role="progressbar" 
-                                style="width: <%= donePercent %>%;" 
-                                aria-valuenow="<%= stat.done %>" aria-valuemin="0" aria-valuemax="<%= stat.total %>">
+                              <div class="progress-bar bg-success" role="progressbar"
+                                style="width: <%= donePercent %>%;" aria-valuenow="<%= stat.done %>" aria-valuemin="0"
+                                aria-valuemax="<%= stat.total %>">
                               </div>
                             </div>
-                            <small class="text-muted"><%= donePercent %>% Done</small>
+                            <small class="text-muted">
+                              <%= donePercent %>% Done
+                            </small>
                           </div>
 
                           <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                               <small class="text-muted">MOA Submitted</small>
-                              <span class="badge bg-warning text-dark"><%= stat.submitted %>/<%= stat.total %></span>
+                              <span class="badge bg-warning text-dark">
+                                <%= stat.submitted %>/<%= stat.total %>
+                              </span>
                             </div>
                             <div class="progress" style="height: 8px;">
-                              <div class="progress-bar bg-warning" role="progressbar" 
-                                style="width: <%= submittedPercent %>%;" 
-                                aria-valuenow="<%= stat.submitted %>" aria-valuemin="0" aria-valuemax="<%= stat.total %>">
+                              <div class="progress-bar bg-warning" role="progressbar"
+                                style="width: <%= submittedPercent %>%;" aria-valuenow="<%= stat.submitted %>"
+                                aria-valuemin="0" aria-valuemax="<%= stat.total %>">
                               </div>
                             </div>
-                            <small class="text-muted"><%= submittedPercent %>% Submitted</small>
+                            <small class="text-muted">
+                              <%= submittedPercent %>% Submitted
+                            </small>
                           </div>
 
                           <div class="bg-light rounded-2 p-2 text-center">
                             <small class="text-muted d-block">Total Students</small>
-                            <h6 class="mb-0 fw-bold text-primary"><%= stat.total %></h6>
+                            <h6 class="mb-0 fw-bold text-primary">
+                              <%= stat.total %>
+                            </h6>
                           </div>
                         </div>
                       </div>
                     </div>
-                  <% }); %>
+                    <% }); %>
                 </div>
-              <% } else { %>
-                <div class="text-center text-muted py-5">
-                  <i class="bi bi-graph-up display-1 mb-3"></i>
-                  <p>No MOA data available yet.</p>
-                </div>
-              <% } %>
+                <% } else { %>
+                  <div class="text-center text-muted py-5">
+                    <i class="bi bi-graph-up display-1 mb-3"></i>
+                    <p>No MOA data available yet.</p>
+                  </div>
+                  <% } %>
             </div>
           </div>
 
@@ -737,50 +756,60 @@
             </div>
             <div class="card-body p-4">
               <div class="row g-4">
-                <% 
-                  let overallDone = 0, overallSubmitted = 0, overallStudents = 0;
-                  reportsData.campusMAOStats.forEach(stat => {
-                    overallDone += stat.done;
-                    overallSubmitted += stat.submitted;
-                    overallStudents += stat.total;
+                <% let overallDone=0, overallSubmitted=0, overallStudents=0; reportsData.campusMAOStats.forEach(stat=> {
+                  overallDone += stat.done;
+                  overallSubmitted += stat.submitted;
+                  overallStudents += stat.total;
                   });
-                  const overallDonePercent = overallStudents > 0 ? Math.round((overallDone / overallStudents) * 100) : 0;
-                  const overallSubmittedPercent = overallStudents > 0 ? Math.round((overallSubmitted / overallStudents) * 100) : 0;
+                  const overallDonePercent = overallStudents > 0 ? Math.round((overallDone / overallStudents) * 100) :
+                  0;
+                  const overallSubmittedPercent = overallStudents > 0 ? Math.round((overallSubmitted / overallStudents)
+                  * 100) : 0;
                   const overallPendingPercent = 100 - overallDonePercent - overallSubmittedPercent;
-                %>
-                <div class="col-md-6">
-                  <div class="text-center">
-                    <div class="mb-3">
-                      <canvas id="moaChart"></canvas>
-                    </div>
-                    <p class="text-muted small">Overall MOA Status Distribution</p>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="list-group list-group-flush">
-                    <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
-                      <div>
-                        <h6 class="mb-1 fw-bold">MOA Completed</h6>
-                        <small class="text-muted"><%= overallDone %> out of <%= overallStudents %> students</small>
+                  %>
+                  <div class="col-md-6">
+                    <div class="text-center">
+                      <div class="mb-3">
+                        <canvas id="moaChart"></canvas>
                       </div>
-                      <span class="badge bg-success rounded-pill"><%= overallDonePercent %>%</span>
-                    </div>
-                    <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
-                      <div>
-                        <h6 class="mb-1 fw-bold">MOA Submitted</h6>
-                        <small class="text-muted"><%= overallSubmitted %> out of <%= overallStudents %> students</small>
-                      </div>
-                      <span class="badge bg-warning text-dark rounded-pill"><%= overallSubmittedPercent %>%</span>
-                    </div>
-                    <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
-                      <div>
-                        <h6 class="mb-1 fw-bold">Pending</h6>
-                        <small class="text-muted">Awaiting submission</small>
-                      </div>
-                      <span class="badge bg-secondary rounded-pill"><%= overallPendingPercent %>%</span>
+                      <p class="text-muted small">Overall MOA Status Distribution</p>
                     </div>
                   </div>
-                </div>
+                  <div class="col-md-6">
+                    <div class="list-group list-group-flush">
+                      <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                        <div>
+                          <h6 class="mb-1 fw-bold">MOA Completed</h6>
+                          <small class="text-muted">
+                            <%= overallDone %> out of <%= overallStudents %> students
+                          </small>
+                        </div>
+                        <span class="badge bg-success rounded-pill">
+                          <%= overallDonePercent %>%
+                        </span>
+                      </div>
+                      <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                        <div>
+                          <h6 class="mb-1 fw-bold">MOA Submitted</h6>
+                          <small class="text-muted">
+                            <%= overallSubmitted %> out of <%= overallStudents %> students
+                          </small>
+                        </div>
+                        <span class="badge bg-warning text-dark rounded-pill">
+                          <%= overallSubmittedPercent %>%
+                        </span>
+                      </div>
+                      <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                        <div>
+                          <h6 class="mb-1 fw-bold">Pending</h6>
+                          <small class="text-muted">Awaiting submission</small>
+                        </div>
+                        <span class="badge bg-secondary rounded-pill">
+                          <%= overallPendingPercent %>%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
               </div>
             </div>
           </div>
@@ -808,7 +837,8 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Campus</label>
-            <input type="text" name="campus" class="form-control" required placeholder="Enter campus (e.g., Main Campus, North Campus)">
+            <input type="text" name="campus" class="form-control" required
+              placeholder="Enter campus (e.g., Main Campus, North Campus)">
           </div>
           <div class="mb-3">
             <label class="form-label">Password</label>
@@ -1108,35 +1138,35 @@
   // Initialize MOA Chart
   const moaChartCanvas = document.getElementById('moaChart');
   if (moaChartCanvas) {
-    <% 
+    <%
       let chartDone = 0, chartSubmitted = 0, chartStudents = 0;
-      reportsData.campusMAOStats.forEach(stat => {
-        chartDone += stat.done;
-        chartSubmitted += stat.submitted;
-        chartStudents += stat.total;
-      });
-      const chartPendingCount = chartStudents - chartDone - chartSubmitted;
+    reportsData.campusMAOStats.forEach(stat => {
+      chartDone += stat.done;
+      chartSubmitted += stat.submitted;
+      chartStudents += stat.total;
+    });
+    const chartPendingCount = chartStudents - chartDone - chartSubmitted;
     %>
-    new Chart(moaChartCanvas, {
-      type: 'doughnut',
-      data: {
-        labels: ['Completed', 'Submitted', 'Pending'],
-        datasets: [{
-          data: [<%= chartDone %>, <%= chartSubmitted %>, <%= chartPendingCount %>],
-          backgroundColor: ['#198754', '#ffc107', '#6c757d'],
-          borderColor: '#fff',
-          borderWidth: 2
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'bottom'
+      new Chart(moaChartCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: ['Completed', 'Submitted', 'Pending'],
+          datasets: [{
+            data: [<%= chartDone %>, <%= chartSubmitted %>, <%= chartPendingCount %>],
+            backgroundColor: ['#198754', '#ffc107', '#6c757d'],
+            borderColor: '#fff',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
           }
         }
-      }
-    });
+      });
   }
 </script>
 
@@ -1157,3 +1187,5 @@
     border-bottom: 1px solid #f0f0f0 !important;
   }
 </style>
+
+<%- include('../partials/chatbot') %>

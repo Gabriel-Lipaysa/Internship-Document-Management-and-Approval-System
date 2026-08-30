@@ -1,0 +1,275 @@
+<% const currentRole=(typeof user !=='undefined' && user && user.role) ? user.role : 'student' ; let
+    roleTitle='OJT Assistant' ; let defaultGreeting='Hello! 👋 How can I help you today?' ; let
+    apiEndpoint='/student/chatbot' ; let faqList=[ { title: 'How to Upload Documents' ,
+    query: 'How do I upload documents?' }, { title: 'Required Documents' , query: 'What documents are required?' }, {
+    title: 'Document Status Guide' , query: 'What does each status mean?' }, {
+    title: 'Process for New Company Application' , query: 'Process for new company application' } ]; if
+    (currentRole==='coordinator' ) { roleTitle='Coordinator AI Assistant' ;
+    defaultGreeting='Hello Coordinator! 👋 How can I assist your document reviews and workflows today?' ;
+    apiEndpoint='/coordinator/chatbot' ; faqList=[ { title: 'Reviewing Student Submissions' ,
+    query: 'How do I review student documents and leave feedback?' }, { title: 'Forwarding to Director' ,
+    query: 'How do I forward submissions to the Director?' }, { title: 'Approving Account Requests' ,
+    query: 'How do I approve pending student accounts?' }, { title: 'Posting Announcements' ,
+    query: 'How do I post announcements with photos?' } ]; } else if (currentRole==='director' ) {
+    roleTitle='Director AI Assistant' ;
+    defaultGreeting='Good day Director! 👋 How can I assist with your executive MOA approvals today?' ;
+    apiEndpoint='/director/chatbot' ; faqList=[ { title: 'Reviewing & Approving MOA' ,
+    query: 'How do I review and approve a student Memorandum of Agreement (MOA)?' }, {
+    title: 'Filtering Student Profiles' , query: 'How do I filter profiles by campus, course, or partner company?' }, {
+    title: 'MOA Status Meanings' , query: 'What do the Processing, Revise, and Done statuses mean for MOA?' }, {
+    title: 'Director Feedback Comments' , query: 'How do I post feedback comments on an MOA submission?' } ]; } %>
+
+    <div class="chatbot-launcher">
+        <div class="launcher-bubble" id="launcherBubble">
+            <div class="bubble-text">
+                <strong>Need help?</strong><br>
+                Ask your AI Assistant! 👇
+            </div>
+            <button class="bubble-close" onclick="closeBubble(event)" title="Dismiss">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+
+        <button class="chatbot-toggle-btn" id="chatbotToggleBtn" onclick="toggleChatbot()"
+            title="Open <%= roleTitle %>">
+            <img src="/images/chatbot-mascot.png" alt="Assistant" class="chatbot-mascot-img">
+        </button>
+    </div>
+
+    <div class="chatbot-widget" id="chatbotWidget">
+        <div class="chatbot-view" id="homeView">
+            <div class="home-header">
+                <button class="close-btn-top" onclick="toggleChatbot()" title="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <div class="home-header-content">
+                    <h1>Hello! 👋</h1>
+                    <p>
+                        <%= roleTitle %>
+                    </p>
+                </div>
+            </div>
+
+            <div class="home-body">
+                <div class="status-card">
+                    <div class="status-indicator"></div>
+                    <div class="status-info">
+                        <strong>System Status</strong>
+                        <span>Operational & Ready</span>
+                    </div>
+                </div>
+
+                <div class="home-search-area">
+                    <button class="send-message-btn" onclick="handleHomeChat(event)">
+                        <i class="bi bi-chat-left-text me-2"></i>
+                        Ask a question
+                    </button>
+                </div>
+
+                <div class="faq-section">
+                    <h3>Quick Inquiries</h3>
+                    <div class="faq-list">
+                        <% faqList.forEach(faq=> { %>
+                            <button class="faq-item" onclick="triggerFaq('<%= faq.query.replace(/'/g, " \\'") %>')">
+                                <span>
+                                    <%= faq.title %>
+                                </span>
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                            <% }); %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chatbot-view hidden" id="chatView">
+            <div class="chat-header-simple">
+                <button class="back-btn" onclick="switchToHome()" title="Back to menu">
+                    <img src="/images/arrow.png" alt="Back" class="btn-icon">
+                </button>
+                <span class="chat-title">
+                    <%= roleTitle %>
+                </span>
+                <button class="close-btn-chat" onclick="toggleChatbot()" title="Close">
+                    <img src="/images/close.png" alt="Close" class="btn-icon">
+                </button>
+            </div>
+
+            <div class="chatbot-messages" id="chatbotMessages">
+                <div class="chatbot-message bot-message">
+                    <div class="message-content">
+                        <p>
+                            <%= defaultGreeting %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chatbot-input-area">
+                <form id="chatbotForm" class="chatbot-form">
+                    <input type="text" id="chatbotInput" placeholder="Type your question here..." class="chatbot-input"
+                        autocomplete="off">
+                    <button type="submit" class="chatbot-send-btn" title="Send message">
+                        <img src="/images/send.png" alt="Send" class="send-icon">
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="chatbot-overlay" id="chatbotOverlay"></div>
+
+    <script>
+        const CHATBOT_ENDPOINT = '<%= apiEndpoint %>';
+
+        function toggleChatbot() {
+            const widget = document.getElementById('chatbotWidget');
+            const toggleBtn = document.getElementById('chatbotToggleBtn');
+            const bubble = document.getElementById('launcherBubble');
+            const overlay = document.getElementById('chatbotOverlay');
+
+            if (!widget) return;
+
+            widget.classList.toggle('active');
+
+            if (widget.classList.contains('active')) {
+                if (toggleBtn) toggleBtn.classList.add('hidden');
+                if (bubble) bubble.style.display = 'none';
+                if (overlay) overlay.classList.add('active');
+                switchToHome();
+            } else {
+                if (toggleBtn) toggleBtn.classList.remove('hidden');
+                if (bubble) bubble.style.display = 'flex';
+                if (overlay) overlay.classList.remove('active');
+            }
+        }
+
+        function closeBubble(e) {
+            if (e) e.stopPropagation();
+            const bubble = document.getElementById('launcherBubble');
+            if (bubble) bubble.remove();
+        }
+
+        function switchToChat() {
+            const homeView = document.getElementById('homeView');
+            const chatView = document.getElementById('chatView');
+            const input = document.getElementById('chatbotInput');
+
+            if (homeView) homeView.classList.add('hidden');
+            if (chatView) chatView.classList.remove('hidden');
+            setTimeout(() => { if (input) input.focus(); }, 100);
+        }
+
+        function switchToHome() {
+            const homeView = document.getElementById('homeView');
+            const chatView = document.getElementById('chatView');
+
+            if (chatView) chatView.classList.add('hidden');
+            if (homeView) homeView.classList.remove('hidden');
+        }
+
+        function handleHomeChat(e) {
+            if (e) e.preventDefault();
+            switchToChat();
+        }
+
+        function triggerFaq(question) {
+            switchToChat();
+            processMessage(question);
+        }
+
+        async function processMessage(messageText) {
+            const messagesContainer = document.getElementById('chatbotMessages');
+            if (!messagesContainer) return;
+
+            const userMsgDiv = document.createElement('div');
+            userMsgDiv.className = 'chatbot-message user-message';
+            userMsgDiv.innerHTML = `<div class="message-content">${escapeChatbotHtml(messageText)}</div>`;
+            messagesContainer.appendChild(userMsgDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'chatbot-message bot-message';
+            loadingDiv.id = 'loading-message';
+            loadingDiv.innerHTML = `<div class="message-content"><span class="spinner-grow spinner-grow-sm text-primary me-1" role="status"></span> Thinking...</div>`;
+            messagesContainer.appendChild(loadingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            try {
+                const response = await fetch(CHATBOT_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: messageText })
+                });
+
+                const loadingEl = document.getElementById('loading-message');
+                if (loadingEl) loadingEl.remove();
+
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.error || 'Failed to get response from assistant');
+                }
+
+                const data = await response.json();
+                const botMsgDiv = document.createElement('div');
+                botMsgDiv.className = 'chatbot-message bot-message';
+                const botText = data.response || "I didn't quite get that.";
+                botMsgDiv.innerHTML = `<div class="message-content">${formatChatbotMessage(botText)}</div>`;
+                messagesContainer.appendChild(botMsgDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            } catch (err) {
+                const loadingEl = document.getElementById('loading-message');
+                if (loadingEl) loadingEl.remove();
+
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'chatbot-message bot-message';
+                errorDiv.innerHTML = `<div class="message-content text-danger">⚠️ ${escapeChatbotHtml(err.message || 'Connection error. Please try again.')}</div>`;
+                messagesContainer.appendChild(errorDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                console.error('Chatbot error:', err);
+            }
+        }
+
+        function escapeChatbotHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function formatChatbotMessage(text) {
+            // Convert simple markdown like bold, bullet points, line breaks
+            let escaped = escapeChatbotHtml(text);
+            escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            escaped = escaped.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            escaped = escaped.replace(/\n• /g, '<br>• ');
+            escaped = escaped.replace(/\n- /g, '<br>• ');
+            escaped = escaped.replace(/\n\n/g, '<br><br>');
+            escaped = escaped.replace(/\n/g, '<br>');
+            return `<p class="mb-0">${escaped}</p>`;
+        }
+
+        const chatbotForm = document.getElementById('chatbotForm');
+        if (chatbotForm) {
+            chatbotForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const input = document.getElementById('chatbotInput');
+                if (!input) return;
+                const message = input.value.trim();
+                if (!message) return;
+
+                processMessage(message);
+                input.value = '';
+            });
+        }
+
+        const chatbotOverlay = document.getElementById('chatbotOverlay');
+        if (chatbotOverlay) {
+            chatbotOverlay.addEventListener('click', toggleChatbot);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const widget = document.getElementById('chatbotWidget');
+            if (e.key === 'Escape' && widget && widget.classList.contains('active')) {
+                toggleChatbot();
+            }
+        });
+    </script>

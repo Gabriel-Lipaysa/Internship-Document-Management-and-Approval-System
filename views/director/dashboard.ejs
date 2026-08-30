@@ -54,7 +54,9 @@
               </div>
               <div>
                 <small class="text-muted d-block">Total Profiles</small>
-                <h4 class="mb-0 fw-bold"><%= profiles ? profiles.length : 0 %></h4>
+                <h4 class="mb-0 fw-bold">
+                  <%= profiles ? profiles.length : 0 %>
+                </h4>
               </div>
             </div>
           </div>
@@ -69,10 +71,10 @@
               </div>
               <div>
                 <small class="text-muted d-block">Pending Approval</small>
-                <h4 class="mb-0 fw-bold"><%
-                  const pendingCount = profiles ? profiles.filter(p => p.overallStatus !== 'Completed').length : 0;
-                  %>
-                  <%= pendingCount %>
+                <h4 class="mb-0 fw-bold">
+                  <% const pendingCount=profiles ? profiles.filter(p=> p.overallStatus !== 'Completed').length : 0;
+                    %>
+                    <%= pendingCount %>
                 </h4>
               </div>
             </div>
@@ -94,10 +96,10 @@
                   <option value="">All Courses</option>
                   <% const courses=[...new Set(profiles?.map(p=> p.personalData?.course).filter(Boolean) || [])];
                     courses.forEach(course => { %>
-                  <option value="<%= course %>">
-                    <%= course %>
-                  </option>
-                  <% }); %>
+                    <option value="<%= course %>">
+                      <%= course %>
+                    </option>
+                    <% }); %>
                 </select>
               </div>
 
@@ -105,12 +107,13 @@
                 <label class="form-label fw-bold small text-muted">Filter by Year & Section</label>
                 <select class="form-select form-select-lg border-0 bg-light rounded-3" id="yearSectionFilter">
                   <option value="">All Year & Section</option>
-                  <% const yearSections=[...new Set(profiles?.map(p=> p.personalData?.yearSection).filter(Boolean) || [])];
+                  <% const yearSections=[...new Set(profiles?.map(p=> p.personalData?.yearSection).filter(Boolean) ||
+                    [])];
                     yearSections.forEach(ys => { %>
-                  <option value="<%= ys %>">
-                    <%= ys %>
-                  </option>
-                  <% }); %>
+                    <option value="<%= ys %>">
+                      <%= ys %>
+                    </option>
+                    <% }); %>
                 </select>
               </div>
 
@@ -120,10 +123,10 @@
                   <option value="">All Campus</option>
                   <% const campuses=[...new Set(profiles?.map(p=> p.personalData?.campus).filter(Boolean) || [])];
                     campuses.forEach(campus => { %>
-                  <option value="<%= campus %>">
-                    <%= campus %>
-                  </option>
-                  <% }); %>
+                    <option value="<%= campus %>">
+                      <%= campus %>
+                    </option>
+                    <% }); %>
                 </select>
               </div>
 
@@ -133,10 +136,10 @@
                   <option value="">All Companies</option>
                   <% const companies=[...new Set(profiles?.map(p=> p.partnership?.agency).filter(Boolean) || [])];
                     companies.forEach(company => { %>
-                  <option value="<%= company %>">
-                    <%= company %>
-                  </option>
-                  <% }); %>
+                    <option value="<%= company %>">
+                      <%= company %>
+                    </option>
+                    <% }); %>
                 </select>
               </div>
             </div>
@@ -146,7 +149,9 @@
                 <i class="bi bi-arrow-clockwise me-2"></i>Reset Filters
               </button>
               <span class="ms-auto text-muted small pt-2">
-                <strong id="filteredCount"><%= profiles ? profiles.length : 0 %></strong> profiles found
+                <strong id="filteredCount">
+                  <%= profiles ? profiles.length : 0 %>
+                </strong> profiles found
               </span>
             </div>
           </div>
@@ -163,100 +168,106 @@
 
         <div class="card-body p-0">
           <% if (profiles && profiles.length) { %>
-          <div class="table-responsive">
-            <table class="table table-hover mb-0" id="profilesTable">
-              <thead class="bg-light">
-                <tr>
-                  <th class="ps-4 text-muted fw-bold small">Course</th>
-                  <th class="text-muted fw-bold small">Year & Section</th>
-                  <th class="text-muted fw-bold small">Campus</th>
-                  <th class="text-muted fw-bold small">Company</th>
-                  <th class="text-muted fw-bold small">Overall Status</th>
-                  <th class="text-end pe-4 text-muted fw-bold small">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% profiles.forEach(p=> { %>
-                <tr class="profile-row"
-                  data-course="<%= p.personalData?.course || '' %>"
-                  data-year-section="<%= p.personalData?.yearSection || '' %>"
-                  data-campus="<%= p.personalData?.campus || '' %>"
-                  data-company="<%= p.partnership?.agency || '' %>">
-                  <td class="ps-4">
-                    <div class="d-flex align-items-center">
-                      <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3"
-                        style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                        <i class="bi bi-book text-primary"></i>
-                      </div>
-                      <div>
-                        <h6 class="mb-0 fw-bold"><%= p.personalData?.course || 'N/A' %></h6>
-                        <small class="text-muted">Program</small>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="fw-bold text-dark">
-                      <%= p.personalData?.yearSection || 'N/A' %>
-                    </span>
-                  </td>
-                  <td>
-                    <span class="fw-bold text-dark">
-                      <%= p.personalData?.campus || 'N/A' %>
-                    </span>
-                  </td>
-                  <td>
-                    <div class="d-flex align-items-center">
-                      <i class="bi bi-building text-info me-2"></i>
-                      <div>
-                        <small class="fw-bold"><%= p.partnership?.agency || 'Not Applied' %></small>
-                        <% if (p.partnership?.location) { %>
-                        <br><small class="text-muted"><%= p.partnership.location %></small>
-                        <% } %>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="badge rounded-pill <%=
+            <div class="table-responsive">
+              <table class="table table-hover mb-0" id="profilesTable">
+                <thead class="bg-light">
+                  <tr>
+                    <th class="ps-4 text-muted fw-bold small">Course</th>
+                    <th class="text-muted fw-bold small">Year & Section</th>
+                    <th class="text-muted fw-bold small">Campus</th>
+                    <th class="text-muted fw-bold small">Company</th>
+                    <th class="text-muted fw-bold small">Overall Status</th>
+                    <th class="text-end pe-4 text-muted fw-bold small">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% profiles.forEach(p=> { %>
+                    <tr class="profile-row" data-course="<%= p.personalData?.course || '' %>"
+                      data-year-section="<%= p.personalData?.yearSection || '' %>"
+                      data-campus="<%= p.personalData?.campus || '' %>"
+                      data-company="<%= p.partnership?.agency || '' %>">
+                      <td class="ps-4">
+                        <div class="d-flex align-items-center">
+                          <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3"
+                            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-book text-primary"></i>
+                          </div>
+                          <div>
+                            <h6 class="mb-0 fw-bold">
+                              <%= p.personalData?.course || 'N/A' %>
+                            </h6>
+                            <small class="text-muted">Program</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="fw-bold text-dark">
+                          <%= p.personalData?.yearSection || 'N/A' %>
+                        </span>
+                      </td>
+                      <td>
+                        <span class="fw-bold text-dark">
+                          <%= p.personalData?.campus || 'N/A' %>
+                        </span>
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <i class="bi bi-building text-info me-2"></i>
+                          <div>
+                            <small class="fw-bold">
+                              <%= p.partnership?.agency || 'Not Applied' %>
+                            </small>
+                            <% if (p.partnership?.location) { %>
+                              <br><small class="text-muted">
+                                <%= p.partnership.location %>
+                              </small>
+                              <% } %>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge rounded-pill <%=
                       p.overallStatus === 'Completed' ? 'bg-success' :
                       p.overallStatus === 'Pending Review' ? 'bg-warning' :
                       'bg-info' %>">
-                    <i class="bi bi-circle-fill me-1" style="font-size: 0.6rem;"></i>
-                    <%= p.overallStatus || 'Pending' %>
-                    </span>
-                  </td>
-                  <td class="text-end pe-4">
-                    <a href="/director/student-view/<%= p._id %>" class="btn btn-primary btn-sm rounded-pill px-4 d-inline-flex align-items-center">
-                      <i class="bi bi-arrow-right me-2"></i>View Details
-                    </a>
-                  </td>
-                </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Empty State for Filters -->
-          <div id="noResultsMessage" class="text-center py-5 d-none">
-            <div class="mb-3">
-              <i class="bi bi-search display-1 text-muted"></i>
+                          <i class="bi bi-circle-fill me-1" style="font-size: 0.6rem;"></i>
+                          <%= p.overallStatus || 'Pending' %>
+                        </span>
+                      </td>
+                      <td class="text-end pe-4">
+                        <a href="/director/student-view/<%= p._id %>"
+                          class="btn btn-primary btn-sm rounded-pill px-4 d-inline-flex align-items-center">
+                          <i class="bi bi-arrow-right me-2"></i>View Details
+                        </a>
+                      </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+              </table>
             </div>
-            <h5 class="text-muted mb-2">No profiles match your filters</h5>
-            <p class="text-muted small mb-3">Try adjusting your filter criteria</p>
-            <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="resetAllFilters()">
-              <i class="bi bi-arrow-clockwise me-2"></i>Reset Filters
-            </button>
-          </div>
 
-          <% } else { %>
-          <!-- Empty State - No Profiles -->
-          <div class="text-center py-5">
-            <div class="mb-3">
-              <i class="bi bi-inbox display-1 text-muted"></i>
+            <!-- Empty State for Filters -->
+            <div id="noResultsMessage" class="text-center py-5 d-none">
+              <div class="mb-3">
+                <i class="bi bi-search display-1 text-muted"></i>
+              </div>
+              <h5 class="text-muted mb-2">No profiles match your filters</h5>
+              <p class="text-muted small mb-3">Try adjusting your filter criteria</p>
+              <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="resetAllFilters()">
+                <i class="bi bi-arrow-clockwise me-2"></i>Reset Filters
+              </button>
             </div>
-            <h5 class="text-muted mb-2">No profiles awaiting director review</h5>
-            <p class="text-muted small">All student profiles have been reviewed</p>
-          </div>
-          <% } %>
+
+            <% } else { %>
+              <!-- Empty State - No Profiles -->
+              <div class="text-center py-5">
+                <div class="mb-3">
+                  <i class="bi bi-inbox display-1 text-muted"></i>
+                </div>
+                <h5 class="text-muted mb-2">No profiles awaiting director review</h5>
+                <p class="text-muted small">All student profiles have been reviewed</p>
+              </div>
+              <% } %>
         </div>
       </div>
     </div>
@@ -347,6 +358,7 @@
       opacity: 0;
       transform: translateY(-10px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -394,3 +406,5 @@
     letter-spacing: 0.5px;
   }
 </style>
+
+<%- include('../partials/chatbot') %>
