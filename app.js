@@ -35,6 +35,10 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads/announcements', express.static(path.join(__dirname, 'uploads/announcements')));
 app.use('/uploads/profile-pictures', express.static(path.join(__dirname, 'uploads/profile-pictures')));
 app.use('/uploads/documents', express.static(path.join(__dirname, 'uploads/documents')));
+app.use('/coordinator/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/student/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/director/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.static(path.join(__dirname, 'uploads/announcements')));
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
 
 const createDirectory = (dirPath) => {

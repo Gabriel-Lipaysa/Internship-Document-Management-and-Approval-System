@@ -316,15 +316,12 @@ router.get('/document-comments/:docId', auth('student'), async (req, res) => {
 router.post('/chatbot', auth('student'), async (req, res) => {
     try {
         const { message } = req.body;
-        if (!message || !message.trim()) {
-            return res.status(400).json({ error: 'Message cannot be empty' });
-        }
-
-        const reply = await ChatbotService.getReply(message, 'student');
+        const reply = await ChatbotService.getReply(message || '', 'student');
         res.json({ response: reply });
     } catch (err) {
-        console.error('Chatbot error:', err);
-        res.status(500).json({ error: err.message || 'Chatbot service unavailable' });
+        console.error('Student chatbot route catch:', err);
+        const fallback = ChatbotService.getLocalFallbackReply(req.body?.message || '', 'student');
+        res.json({ response: fallback });
     }
 });
 

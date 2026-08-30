@@ -311,9 +311,28 @@ router.post('/announcement', auth('coordinator'), (req, res) => {
                 return res.status(400).json({ error: err.message });
             }
 
+            const title = req.body.title ? req.body.title.trim() : '';
+            const content = req.body.content ? req.body.content.trim() : '';
+
+            if (!title || !content) {
+                return res.status(400).json({ error: 'Please provide both title and content for the announcement.' });
+            }
+
+            // Duplicate request prevention: Check for duplicate announcement created within the last 5 seconds
+            const recentDuplicate = await Announcement.findOne({
+                author: req.user._id,
+                title: title,
+                content: content,
+                createdAt: { $gte: new Date(Date.now() - 5000) }
+            });
+
+            if (recentDuplicate) {
+                return res.json(recentDuplicate);
+            }
+
             const announcement = new Announcement({
-                title: req.body.title,
-                content: req.body.content,
+                title,
+                content,
                 author: req.user._id,
                 imageUrl: req.file ? getUploadedFileUrl(req.file, 'announcement') : undefined
             });
@@ -321,7 +340,8 @@ router.post('/announcement', auth('coordinator'), (req, res) => {
             await announcement.save();
             res.json(announcement);
         } catch (err) {
-            res.status(500).json({ error: err.message });
+            console.error('Announcement creation error:', err);
+            res.status(500).json({ error: err.message || 'Error creating announcement' });
         }
     });
 });
@@ -530,15 +550,12 @@ router.delete('/document-comment/:docId/:commentIndex', auth('coordinator'), asy
 router.post('/chatbot', auth('coordinator'), async (req, res) => {
     try {
         const { message } = req.body;
-        if (!message || !message.trim()) {
-            return res.status(400).json({ error: 'Message cannot be empty' });
-        }
-
-        const reply = await ChatbotService.getReply(message, 'coordinator');
+        const reply = await ChatbotService.getReply(message || '', 'coordinator');
         res.json({ response: reply });
     } catch (err) {
-        console.error('Coordinator chatbot error:', err);
-        res.status(500).json({ error: err.message || 'Chatbot service error' });
+        console.error('Coordinator chatbot route catch:', err);
+        const fallback = ChatbotService.getLocalFallbackReply(req.body?.message || '', 'coordinator');
+        res.json({ response: fallback });
     }
 });
 

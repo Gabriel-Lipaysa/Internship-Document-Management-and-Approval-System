@@ -89,11 +89,12 @@
                       style="width: 45px; height: 45px; object-fit: cover;">
 
                     <div class="flex-grow-1">
-                      <input type="text" name="title"
+                      <input type="text" name="title" id="announcementTitle" required
                         class="form-control border-0 bg-transparent fw-bold fs-5 ps-0 mb-1"
                         placeholder="Create an announcement title" style="box-shadow: none;">
 
-                      <textarea name="content" class="form-control border-0 bg-transparent ps-0" rows="2"
+                      <textarea name="content" id="announcementContent" required
+                        class="form-control border-0 bg-transparent ps-0" rows="2"
                         placeholder="Share something with your students..."
                         style="box-shadow: none; resize: none;"></textarea>
                     </div>
@@ -118,7 +119,8 @@
                       </label>
                     </div>
 
-                    <button type="submit" class="btn btn-primary px-5 fw-bold rounded-3">Post</button>
+                    <button type="submit" id="announcementSubmitBtn"
+                      class="btn btn-primary px-5 fw-bold rounded-3">Post</button>
                   </div>
                 </form>
               </div>
@@ -163,56 +165,60 @@
                         </p>
 
                         <% if (announcement.imageUrl) { %>
-                          <div class="text-center">
-                            <img src="<%= announcement.imageUrl %>" class="img-fluid rounded mb-3 clickable-image"
-                              style="aspect-ratio: 1 / 1; width: 100%; max-width: 400px; object-fit: cover; cursor: pointer;"
-                              data-bs-toggle="modal" data-bs-target="#imageModal" onclick="prepareModal(this.src)"
-                              onerror="this.parentElement.style.display='none'">
-                          </div>
-                          <% } %>
+                          <% const postImg=(announcement.imageUrl.startsWith('http') ||
+                            announcement.imageUrl.startsWith('/')) ? announcement.imageUrl : '/uploads/announcements/' +
+                            announcement.imageUrl; %>
+                            <div class="text-center">
+                              <img src="<%= postImg %>" class="img-fluid rounded mb-3 clickable-image"
+                                style="aspect-ratio: 1 / 1; width: 100%; max-width: 400px; object-fit: cover; cursor: pointer;"
+                                data-bs-toggle="modal" data-bs-target="#imageModal" onclick="prepareModal(this.src)"
+                                onerror="this.parentElement.style.display='none'">
+                            </div>
+                            <% } %>
 
-                            <div class="border-top pt-3">
-                              <button class="btn btn-outline-primary btn-sm mb-3 comment-btn"
-                                onclick="toggleComments(this)">
-                                <i class="bi bi-chat"></i> Comments (<%= announcement.comments?.length || 0 %>)
-                              </button>
+                              <div class="border-top pt-3">
+                                <button class="btn btn-outline-primary btn-sm mb-3 comment-btn"
+                                  onclick="toggleComments(this)">
+                                  <i class="bi bi-chat"></i> Comments (<%= announcement.comments?.length || 0 %>)
+                                </button>
 
-                              <div class="comments-section" style="display: none;">
-                                <form class="comment-form d-flex gap-2 mb-3"
-                                  data-announcement="<%= announcement._id %>">
-                                  <img src="<%= user.profilePicture || '/images/default-avatar.png' %>"
-                                    onerror="this.src='/images/profile-placeholder.png'" class="rounded-circle"
-                                    style="width: 32px; height: 32px; object-fit: cover;">
-                                  <div class="flex-grow-1">
-                                    <input type="text" class="form-control rounded-pill"
-                                      placeholder="Write a comment...">
-                                  </div>
-                                  <button type="submit" class="btn btn-primary btn-sm px-3">Post</button>
-                                </form>
-
-                                <div class="comments-list">
-                                  <% (announcement.comments || []).forEach(comment=> { %>
-                                    <div class="d-flex gap-2 mb-2">
-                                      <img src="<%= comment.author?.profilePicture || '/images/default-avatar.png' %>"
-                                        onerror="this.src='/images/profile-placeholder.png'" class="rounded-circle"
-                                        style="width: 32px; height: 32px; object-fit: cover;">
-                                      <div class="bg-light rounded-3 p-2 flex-grow-1">
-                                        <div class="fw-bold">
-                                          <%= comment.author?.name || comment.author?.email %>
-                                        </div>
-                                        <p class="mb-1">
-                                          <%= comment.content %>
-                                        </p>
-                                        <small class="text-muted">
-                                          <%= new Date(comment.createdAt).toLocaleString('en-US', { year: 'numeric' ,
-                                            month: 'short' , day: 'numeric' , hour: 'numeric' , minute: '2-digit' }) %>
-                                        </small>
-                                      </div>
+                                <div class="comments-section" style="display: none;">
+                                  <form class="comment-form d-flex gap-2 mb-3"
+                                    data-announcement="<%= announcement._id %>">
+                                    <img src="<%= user.profilePicture || '/images/default-avatar.png' %>"
+                                      onerror="this.src='/images/profile-placeholder.png'" class="rounded-circle"
+                                      style="width: 32px; height: 32px; object-fit: cover;">
+                                    <div class="flex-grow-1">
+                                      <input type="text" class="form-control rounded-pill"
+                                        placeholder="Write a comment...">
                                     </div>
-                                    <% }) %>
+                                    <button type="submit" class="btn btn-primary btn-sm px-3">Post</button>
+                                  </form>
+
+                                  <div class="comments-list">
+                                    <% (announcement.comments || []).forEach(comment=> { %>
+                                      <div class="d-flex gap-2 mb-2">
+                                        <img src="<%= comment.author?.profilePicture || '/images/default-avatar.png' %>"
+                                          onerror="this.src='/images/profile-placeholder.png'" class="rounded-circle"
+                                          style="width: 32px; height: 32px; object-fit: cover;">
+                                        <div class="bg-light rounded-3 p-2 flex-grow-1">
+                                          <div class="fw-bold">
+                                            <%= comment.author?.name || comment.author?.email %>
+                                          </div>
+                                          <p class="mb-1">
+                                            <%= comment.content %>
+                                          </p>
+                                          <small class="text-muted">
+                                            <%= new Date(comment.createdAt).toLocaleString('en-US', { year: 'numeric' ,
+                                              month: 'short' , day: 'numeric' , hour: 'numeric' , minute: '2-digit' })
+                                              %>
+                                          </small>
+                                        </div>
+                                      </div>
+                                      <% }) %>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
                       </div>
                     </div>
                     <% }) %>
@@ -875,36 +881,72 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+  let isAnnouncementSubmitting = false;
+
   document.getElementById('announcementForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
+    if (isAnnouncementSubmitting) return;
+
+    const titleInput = document.getElementById('announcementTitle');
+    const contentInput = document.getElementById('announcementContent');
+    const title = (titleInput?.value || '').trim();
+    const content = (contentInput?.value || '').trim();
+
+    if (!title || !content) {
+      showToast('Please enter both a title and content for the announcement.', 'warning');
+      return;
+    }
+
+    const submitBtn = document.getElementById('announcementSubmitBtn');
+    const originalBtnText = submitBtn ? submitBtn.innerHTML : 'Post';
+
     try {
+      isAnnouncementSubmitting = true;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Posting...';
+      }
+
+      const formData = new FormData(e.target);
       const response = await fetch('/coordinator/announcement', {
         method: 'POST',
         body: formData
       });
 
+      const result = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create announcement');
+        throw new Error(result.error || result.message || 'Failed to create announcement');
       }
 
       showToast('Announcement posted successfully!', 'success');
-      setTimeout(() => window.location.reload(), 600);
+      setTimeout(() => window.location.reload(), 500);
     } catch (err) {
-      showToast('Error creating announcement: ' + err.message, 'danger');
+      showToast(err.message || 'Error creating announcement', 'danger');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+      }
+      isAnnouncementSubmitting = false;
     }
   });
 
   function removeImage() {
     const input = document.getElementById('announcementImage');
     const preview = document.getElementById('imagePreview');
+    const previewContainer = document.getElementById('previewContainer');
     if (input) input.value = '';
-    if (preview) preview.style.display = 'none';
+    if (preview) preview.src = '';
+    if (previewContainer) {
+      previewContainer.classList.add('d-none');
+      previewContainer.style.display = 'none';
+    }
   }
 
   document.querySelectorAll('.delete-announcement').forEach(button => {
     button.addEventListener('click', async () => {
+      if (button.disabled) return;
+
       const confirmed = await showConfirmModal({
         title: 'Delete Announcement',
         message: 'Are you sure you want to delete this announcement? This action cannot be undone.',
@@ -914,6 +956,8 @@
       if (!confirmed) return;
 
       const id = button.dataset.id;
+      button.disabled = true;
+
       try {
         const response = await fetch(`/coordinator/announcement/${id}`, {
           method: 'DELETE'
@@ -921,15 +965,14 @@
 
         if (response.ok) {
           const card = button.closest('.custom-post-card');
-          if (card) {
-            card.remove();
-          }
+          if (card) card.remove();
           showToast('Announcement deleted successfully', 'success');
         } else {
           throw new Error('Failed to delete announcement');
         }
       } catch (err) {
         showToast('Error deleting announcement: ' + err.message, 'danger');
+        button.disabled = false;
       }
     });
   });
@@ -946,14 +989,21 @@
   }
 
   document.querySelectorAll('.comment-form').forEach(form => {
+    let isCommentSubmitting = false;
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (isCommentSubmitting) return;
+
       const input = form.querySelector('input');
+      const submitBtn = form.querySelector('button[type="submit"]');
       const announcementId = form.dataset.announcement;
 
-      if (!input.value.trim()) return;
+      if (!input || !input.value.trim()) return;
 
       try {
+        isCommentSubmitting = true;
+        if (submitBtn) submitBtn.disabled = true;
+
         const response = await fetch(`/coordinator/announcement/${announcementId}/comment`, {
           method: 'POST',
           headers: {
@@ -985,43 +1035,61 @@
             `;
         commentsList.insertAdjacentHTML('afterbegin', commentHtml);
         const commentBtn = form.closest('.card-body').querySelector('.comment-btn');
-        const currentCount = parseInt(commentBtn.textContent.match(/\d+/)[0]);
-        commentBtn.innerHTML = `<i class="bi bi-chat"></i> Comments (${currentCount + 1})`;
+        if (commentBtn) {
+          const countMatch = commentBtn.textContent.match(/\d+/);
+          const currentCount = countMatch ? parseInt(countMatch[0]) : 0;
+          commentBtn.innerHTML = `<i class="bi bi-chat"></i> Comments (${currentCount + 1})`;
+        }
 
         input.value = '';
         showToast('Comment posted successfully', 'success');
       } catch (err) {
         showToast('Error posting comment: ' + err.message, 'danger');
+      } finally {
+        isCommentSubmitting = false;
+        if (submitBtn) submitBtn.disabled = false;
       }
     });
   });
 
+  let isCoordinatorCreating = false;
   document.getElementById('addCoordinatorForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
+    if (isCoordinatorCreating) return;
+
+    const submitBtn = e.target.querySelector('button[type="submit"]');
     try {
+      isCoordinatorCreating = true;
+      if (submitBtn) submitBtn.disabled = true;
+
+      const formData = new FormData(e.target);
       const response = await fetch('/api/coordinator/create-coordinator', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(Object.fromEntries(formData))
       });
-      const result = await response.json();
+      const result = await response.json().catch(() => ({}));
       if (response.ok) {
         showToast('Coordinator account created successfully', 'success');
         e.target.reset();
         const modal = bootstrap.Modal.getInstance(document.getElementById('addCoordinatorModal'));
         if (modal) modal.hide();
-        setTimeout(() => window.location.reload(), 600);
+        setTimeout(() => window.location.reload(), 500);
       } else {
         showToast(result.error || 'Failed to create coordinator account', 'danger');
       }
     } catch (err) {
       showToast('Error creating coordinator account: ' + err.message, 'danger');
+    } finally {
+      isCoordinatorCreating = false;
+      if (submitBtn) submitBtn.disabled = false;
     }
   });
 
   document.querySelectorAll('.delete-coordinator').forEach(btn => {
     btn.addEventListener('click', async () => {
+      if (btn.disabled) return;
+
       const confirmed = await showConfirmModal({
         title: 'Delete Coordinator',
         message: 'Delete this coordinator? This will permanently remove the coordinator account.',
@@ -1031,6 +1099,8 @@
       if (!confirmed) return;
 
       const id = btn.dataset.id;
+      btn.disabled = true;
+
       try {
         const response = await fetch(`/coordinator/${id}`, {
           method: 'DELETE',
@@ -1040,17 +1110,21 @@
           document.getElementById(`coordinator-${id}`)?.remove();
           showToast('Coordinator deleted successfully', 'success');
         } else {
-          const error = await response.json();
+          const error = await response.json().catch(() => ({}));
           showToast(error.error || 'Failed to delete coordinator', 'danger');
+          btn.disabled = false;
         }
       } catch (err) {
         showToast('Error deleting coordinator: ' + err.message, 'danger');
+        btn.disabled = false;
       }
     });
   });
 
   document.querySelectorAll('.approve-student').forEach(button => {
     button.addEventListener('click', async (e) => {
+      if (button.disabled) return;
+
       const userId = e.target.dataset.id;
       const confirmed = await showConfirmModal({
         title: 'Approve Student Account',
@@ -1060,6 +1134,7 @@
       });
       if (!confirmed) return;
 
+      button.disabled = true;
       try {
         const response = await fetch(`/coordinator/approve-student/${userId}`, {
           method: 'PUT',
@@ -1067,12 +1142,14 @@
         });
         if (response.ok) {
           showToast('Student account approved successfully', 'success');
-          setTimeout(() => window.location.reload(), 600);
+          setTimeout(() => window.location.reload(), 500);
         } else {
           showToast('Error approving student account', 'danger');
+          button.disabled = false;
         }
       } catch (err) {
         showToast('Error approving student: ' + err.message, 'danger');
+        button.disabled = false;
       }
     });
   });
