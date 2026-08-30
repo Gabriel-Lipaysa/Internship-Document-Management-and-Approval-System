@@ -13,7 +13,7 @@ try {
 }
 
 const isCloudinaryConfigured = Boolean(
-    process.env.CLOUDINARY_URL || 
+    process.env.CLOUDINARY_URL ||
     (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET)
 );
 
@@ -115,23 +115,36 @@ if (isCloudinaryConfigured && CloudinaryStorage && cloudinary) {
 // File Filters
 // ----------------------------------------------------
 const imageFilter = (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (allowedTypes.includes(file.mimetype) || file.mimetype.startsWith('image/')) {
+    if (!file) {
+        return cb(null, true);
+    }
+    const ext = path.extname(file.originalname || '').toLowerCase();
+    const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.svg', '.jfif', '.heic'];
+    const isImageMime = file.mimetype && (file.mimetype.startsWith('image/') || file.mimetype === 'application/octet-stream');
+
+    if (isImageMime || allowedExts.includes(ext)) {
         cb(null, true);
     } else {
-        cb(new Error('Only image files (JPEG, PNG, WEBP) are allowed'));
+        cb(new Error('Only image files (JPEG, PNG, WEBP, GIF) are allowed.'));
     }
 };
 
 const docFilter = (req, file, cb) => {
+    if (!file) {
+        return cb(null, true);
+    }
+    const ext = path.extname(file.originalname || '').toLowerCase();
+    const allowedExts = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'];
     const allowedTypes = [
         'application/pdf',
         'image/jpeg',
         'image/png',
+        'image/webp',
         'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/octet-stream'
     ];
-    if (allowedTypes.includes(file.mimetype)) {
+    if (allowedTypes.includes(file.mimetype) || allowedExts.includes(ext) || file.mimetype.startsWith('image/')) {
         cb(null, true);
     } else {
         cb(new Error('Invalid file type. Only PDF, JPEG, PNG, and Word documents are allowed.'));
@@ -167,7 +180,7 @@ const docUpload = multer({
  */
 const getUploadedFileUrl = (file, type) => {
     if (!file) return null;
-    
+
     // Cloudinary returns path or secure_url as full HTTPS URL
     if (file.path && (file.path.startsWith('http://') || file.path.startsWith('https://'))) {
         return file.path;
