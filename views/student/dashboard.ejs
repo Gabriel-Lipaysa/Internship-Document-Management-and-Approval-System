@@ -79,7 +79,9 @@
                                     <div class="card-header border-0 pt-3">
                                         <div class="d-flex align-items-center">
                                             <img src="<%= announcement.author?.profilePicture || '/images/default-avatar.png' %>"
-                                                class="rounded-circle me-3" style="width: 42px; height: 42px;">
+                                                onerror="this.src='/images/profile-placeholder.png'"
+                                                class="rounded-circle me-3"
+                                                style="width: 42px; height: 42px; object-fit: cover;">
                                             <div>
                                                 <div class="mb-0">
                                                     <span class="post-author-name">
@@ -108,7 +110,8 @@
                                                     class="img-fluid rounded mb-3 clickable-image"
                                                     style="aspect-ratio: 1 / 1; width: 100%; max-width: 400px; object-fit: cover; cursor: pointer;"
                                                     data-bs-toggle="modal" data-bs-target="#imageModal"
-                                                    onclick="prepareModal(this.src)">
+                                                    onclick="prepareModal(this.src)"
+                                                    onerror="this.parentElement.style.display='none'">
                                             </div>
                                             <% } %>
 
@@ -125,6 +128,7 @@
                                                             data-announcement="<%= announcement._id %>">
                                                             <!-- use user.profilePicture OR student profile picture OR default -->
                                                             <img src="<%= user.profilePicture || (profile?.personalData?.profilePicture) || '/images/default-avatar.png' %>"
+                                                                onerror="this.src='/images/profile-placeholder.png'"
                                                                 class="rounded-circle"
                                                                 style="width: 32px; height: 32px; object-fit: cover;">
                                                             <div class="flex-grow-1">
@@ -139,6 +143,7 @@
                                                             <% (announcement.comments || []).forEach(comment=> { %>
                                                                 <div class="d-flex gap-2 mb-2">
                                                                     <img src="<%= comment.author?.profilePicture || '/images/default-avatar.png' %>"
+                                                                        onerror="this.src='/images/profile-placeholder.png'"
                                                                         class="rounded-circle"
                                                                         style="width: 32px; height: 32px; object-fit: cover;">
                                                                     <div class="bg-light rounded-3 p-2 flex-grow-1">
@@ -690,6 +695,7 @@
                             <div class="profile-picture-container text-center ms-4">
                                 <div class="position-relative" style="width: 200px; height: 200px">
                                     <img src="<%= profile.personalData.profilePicture || '/images/default-avatar.png' %>"
+                                        onerror="this.src='/images/profile-placeholder.png'"
                                         class="rounded-circle border shadow-sm"
                                         style="width: 100%; height: 100%; object-fit: cover" />
                                 </div>
@@ -925,7 +931,7 @@
                             window.location.reload();
                         } catch (err) {
                             console.error('Upload error:', err);
-                            alert(err.message || 'Upload failed. Please try again.');
+                            showToast(err.message || 'Upload failed. Please try again.', 'danger');
                         }
                     });
                 });
@@ -967,6 +973,7 @@
                             const commentHtml = `
                 <div class="d-flex gap-2 mb-2">
                     <img src="${comment.author.profilePicture || '/images/default-avatar.png'}" 
+                         onerror="this.src='/images/profile-placeholder.png'"
                          class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
                     <div class="bg-light rounded-3 p-2 flex-grow-1">
                         <div class="fw-bold">${comment.author.name || comment.author.email}</div>
@@ -982,8 +989,9 @@
                             commentBtn.innerHTML = `<i class="bi bi-chat"></i> Comments (${currentCount + 1})`;
 
                             input.value = '';
+                            showToast('Comment posted successfully', 'success');
                         } catch (err) {
-                            alert('Error posting comment: ' + err.message);
+                            showToast('Error posting comment: ' + err.message, 'danger');
                         }
                     });
                 });
@@ -1004,7 +1012,7 @@
 
                     const agencySelect = document.getElementById('agencySelect');
                     if (!agencySelect.value) {
-                        alert('Please select a partnership');
+                        showToast('Please select a partnership', 'warning');
                         return;
                     }
 
@@ -1012,7 +1020,7 @@
                     const data = Object.fromEntries(formData);
 
                     if (data.agency === 'Others' && !data.customAgency) {
-                        alert('Please enter a partnership name');
+                        showToast('Please enter a partnership name', 'warning');
                         return;
                     }
 
@@ -1028,16 +1036,13 @@
                             throw new Error(error.error || 'Failed to submit application');
                         }
 
-                        const alertBox = document.getElementById('customSuccessAlert');
-                        document.getElementById('successMessageText').innerText = 'Application submitted successfully!';
-                        alertBox.style.display = 'block';
+                        showToast('Application submitted successfully!', 'success');
 
                         setTimeout(() => {
                             window.location.reload();
-                        }, 2000);
-                        window.location.reload();
+                        }, 1000);
                     } catch (err) {
-                        alert('Error: ' + err.message);
+                        showToast('Error: ' + err.message, 'danger');
                     }
                 });
 
@@ -1047,17 +1052,17 @@
                         document.getElementById('customAgencyDiv').style.display = 'block';
                     }
                 });
-            </script>
-            function switchToApplicationTab() {
-            const appLink = document.querySelector('.nav-link[href="#application"]');
 
-            if (appLink) {
-            const tab = new bootstrap.Tab(appLink);
-            tab.show();
+                function switchToApplicationTab() {
+                    const appLink = document.querySelector('.nav-link[href="#application"]');
 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-            }
+                    if (appLink) {
+                        const tab = new bootstrap.Tab(appLink);
+                        tab.show();
+
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                }
             </script>
 
             <%- include('../partials/chatbot') %>
