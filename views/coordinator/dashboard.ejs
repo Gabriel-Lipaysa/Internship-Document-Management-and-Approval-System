@@ -908,21 +908,29 @@
       }
 
       const formData = new FormData(e.target);
+      const headers = {};
+      const token = localStorage.getItem('token');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch('/coordinator/announcement', {
         method: 'POST',
+        headers: headers,
         body: formData
       });
 
       const result = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        throw new Error(result.error || result.message || 'Failed to create announcement');
+        throw new Error(result.error || result.message || `Server responded with status ${response.status} ${response.statusText}`);
       }
 
       showToast('Announcement posted successfully!', 'success');
       setTimeout(() => window.location.reload(), 500);
     } catch (err) {
-      showToast(err.message || 'Error creating announcement', 'danger');
+      console.error('Post announcement error detail:', err);
+      showToast(err.message || 'Error creating announcement', 'danger', 'Upload Error', 6000);
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalBtnText;

@@ -8,8 +8,12 @@ const connectDB = async () => {
   if (isConnecting || mongoose.connection.readyState === 1) return;
   isConnecting = true;
   try {
-    await mongoose.connect(config.MONGODB_URI);
-    console.log('MongoDB connection successful');
+    const options = {
+      serverSelectionTimeoutMS: 15000,
+      socketTimeoutMS: 45000,
+    };
+    await mongoose.connect(config.MONGODB_URI, options);
+    console.log('✓ MongoDB connection successful');
     await autoSeed();
   } catch (err) {
     console.error('MongoDB connection error:', err.message);
